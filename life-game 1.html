@@ -1,0 +1,2239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Anyones">
+<title>Anyones</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--tx:#222;--sub:#777;--ac:#d9480f;--bd:#ddd;--gain:#e6f4ea;--loss:#fdeaea;--sp:#fff3cd;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1b19;--card:#2a2926;--tx:#eee;--sub:#aaa;--bd:#444;--gain:#1f3a28;--loss:#472626;--sp:#4a4020}}
+:root[data-theme="dark"]{--bg:#1c1b19;--card:#2a2926;--tx:#eee;--sub:#aaa;--bd:#444;--gain:#1f3a28;--loss:#472626;--sp:#4a4020}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;padding:12px}
+.w{max-width:760px;margin:0 auto}
+h1{font-size:20px;margin:4px 0 10px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
+label{display:block;font-size:13px;color:var(--sub);margin-top:8px}
+select,button{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
+button{background:var(--ac);color:#fff;border:0;font-weight:700;margin-top:12px;cursor:pointer}
+button:disabled{opacity:.5}
+.st{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:14px}
+.st b{font-size:18px}
+.bd{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}.bw{height:380px;overflow:auto;border-radius:10px;border:1px solid var(--bd)}#wbox{position:relative;text-align:center;margin-top:6px}
+#wbox.tense svg{animation:ps .3s infinite alternate}@keyframes ps{to{transform:scale(1.04)}}
+.bl{fill:#ffd43b}.spin .bl:nth-child(odd){animation:bk .22s infinite alternate}@keyframes bk{to{fill:#fff;opacity:.35}}
+#mute{position:absolute;right:0;top:0;width:auto;margin:0;padding:4px 10px;background:var(--card);color:var(--tx);border:1px solid var(--bd)}
+#ev{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);align-items:center;justify-content:center;z-index:50;padding:20px}
+.evc{background:var(--card);border:5px solid var(--bd);border-radius:18px;padding:20px 24px;text-align:center;max-width:460px;width:100%;animation:pop .25s}
+#ev.g .evc{border-color:#2f9e44}#ev.l .evc{border-color:#e03131}
+#evs{font-size:18px;line-height:1.6;margin:8px 0 4px;font-weight:600}
+.bar{display:inline-block;height:11px;border-radius:6px;background:rgba(128,128,128,.28);overflow:hidden;vertical-align:middle;position:relative}.bar i{display:block;height:100%;border-radius:6px;transition:width .5s,background .5s}
+#netm{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:70;padding:12px}#netm.on{display:flex}
+#netb{background:var(--card);color:var(--tx);border-radius:14px;padding:16px;width:min(460px,100%);max-height:92vh;overflow:auto}
+#netb h2{margin:0 0 6px;font-size:18px}#netb input{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
+#netb .row{display:flex;gap:8px}#netb .row button{margin-top:10px}#netb button.alt{background:#868e96}
+#ncodev{font-size:40px;font-weight:800;letter-spacing:.12em;text-align:center;color:var(--ac);margin:4px 0}
+.ns{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid var(--bd)}.ns .nc{width:24px;height:24px;border-radius:50%;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}.ns .nx{width:auto;margin:0 0 0 auto;padding:2px 10px;background:#868e96}
+#nmsg{color:#e03131;font-size:13px;min-height:18px;margin-top:6px}
+#netbar{position:fixed;left:50%;transform:translateX(-50%);bottom:6px;background:rgba(30,30,30,.85);color:#fff;font-size:12px;padding:4px 12px;border-radius:14px;z-index:40;display:none;max-width:94vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow{display:flex;gap:8px;margin-bottom:6px}.mrow button{margin:0}
+.oh{display:flex;align-items:center;gap:6px;font-size:12px;margin-top:4px}.oh .cb{display:inline-block;width:18px;height:24px;border-radius:3px;border:1px solid rgba(0,0,0,.35);font-style:normal;font-size:0}
+
+#jobpick{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:55;display:flex;align-items:center;justify-content:center;padding:12px}#jobpick.hide{display:none}
+#jpbox{background:var(--card);color:var(--tx);border-radius:16px;padding:16px;width:min(560px,100%);max-height:92vh;overflow:auto}
+#jpbox h3{margin:0 0 4px;font-size:18px}.jpn{font-size:12px;color:var(--sub);margin-bottom:8px}
+.jst{display:grid;gap:8px}.jst button{margin:0;text-align:left;padding:12px 14px;font-weight:700;font-size:16px;background:var(--card);color:var(--tx);border:2px solid var(--bd)}
+.jst button small{display:block;font-weight:400;font-size:12px;opacity:.85;margin-top:2px}.jst button:hover,.jst button:active{border-color:var(--ac)}
+.jjl{display:grid;gap:6px}.jjl button.jj{margin:0;text-align:left;padding:8px 10px;font-weight:400;font-size:14px;background:var(--card);color:var(--tx);border:2px solid var(--bd)}
+.jjl button.jj.sel{border-color:var(--ac);background:var(--sp)}.jjl small{display:block;font-size:11px;opacity:.9}
+.jpb{display:flex;gap:8px;margin-top:8px}.jpb button{margin:0}.jpb .bk{background:#868e96;width:36%}
+.sc.gov{background:rgba(66,99,235,.12);border:1px solid rgba(66,99,235,.35)}.gm{letter-spacing:-1px;font-size:10px}.gm.l1,.gm.l2{color:#2f9e44}.gm.l3{color:#e8a200}.gm.l4,.gm.l5{color:#e03131}.trap{pointer-events:none}.trc{color:#c2410c;margin-top:2px}.bar i.anim{transition:width 1.2s cubic-bezier(.22,.8,.3,1),background 1.2s}.bar i.bup{box-shadow:0 0 8px 2px rgba(47,158,68,.85)}.bar i.bdn{box-shadow:0 0 8px 2px rgba(224,49,49,.85)}
+#evst .bar{height:16px;border-radius:8px}#evst>div{margin:6px 0;display:flex;align-items:center;justify-content:center;gap:8px}
+#res .bar{height:13px}
+#evst{font-size:20px;font-weight:700;margin-top:4px}
+#evw{font-size:13px;color:var(--sub)}#evt{font-size:28px;font-weight:800;margin:6px 0}#evd{font-size:46px;font-weight:800;line-height:1.2}
+#ev.g #evd{color:#2f9e44}#ev.l #evd{color:#e03131}#evb{font-size:16px;line-height:1.7;margin-top:8px}
+@keyframes pop{from{transform:scale(.7);opacity:0}}
+.ch{font-size:12px;color:var(--sub);margin:10px 0 3px}.jg{display:grid;grid-template-columns:1fr 1fr;gap:6px}.jg button{margin:0;padding:6px 8px;text-align:left;font-weight:400;font-size:13px}.jg small{display:block;font-size:10px;opacity:.85}
+#dice{font-size:52px;text-align:center;line-height:1.1;margin-top:6px}.c.mand{background:#ffd8a8;color:#222;font-weight:700}.note{font-size:12px;color:var(--sub);margin-top:6px}
+.c{border:1px solid var(--bd);border-radius:8px;padding:4px 2px;text-align:center;font-size:9px;min-height:44px;background:var(--card);position:relative}
+.c.gain{background:var(--gain)}.c.loss{background:var(--loss)}.c.sp{background:var(--sp)}
+.c.me{outline:3px solid var(--ac)}
+.c i{display:block;font-style:normal;color:var(--sub);font-size:10px}
+.c .p{position:absolute;top:-6px;right:-2px;font-size:16px}
+#log{height:200px;overflow:auto;font-size:14px;line-height:1.5}
+#log div{padding:3px 0;border-bottom:1px dashed var(--bd)}
+.hide{display:none!important}
+.c.gain{border-bottom:4px solid #2e9e4f}.c.loss{border-bottom:4px solid #d64545}.c .e{position:absolute;left:1px;top:0;font-size:9px;opacity:.8}
+:root{--t0:#d8efc4;--t1:#b9dba0;--t2:#d9d4cc;--t3:#bfe3f5;--t4:#f3e2b0;--t5:#d5d9e0;--t6:#eef6fb}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--t0:#2f4a2a;--t1:#24401f;--t2:#4a4640;--t3:#1f4257;--t4:#5a4d26;--t5:#3b4048;--t6:#45596a}}
+:root[data-theme="dark"]{--t0:#2f4a2a;--t1:#24401f;--t2:#4a4640;--t3:#1f4257;--t4:#5a4d26;--t5:#3b4048;--t6:#45596a}
+
+.pr{display:grid;grid-template-columns:14px 1.6fr 1fr;gap:4px;align-items:center;margin-top:6px}
+input#seed{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
+.pr input{font:inherit;padding:6px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%;min-width:0}
+.pr select{padding:6px 4px;font-size:12px}
+#pt td small{white-space:normal;display:inline-block;max-width:92px;line-height:1.25}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:3px 2px;text-align:left;white-space:nowrap}th{color:var(--sub);font-weight:400}tr.cur{background:var(--sp)}
+html{-webkit-text-size-adjust:100%}
+body{-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none}
+#hd{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#fsb{width:auto;margin:0;padding:6px 12px;font-size:13px;background:var(--card);color:var(--tx);border:1px solid var(--bd)}
+#fsmsg{font-size:12px;color:var(--ac);display:none;margin-bottom:6px}
+@media (pointer:coarse){button,select{min-height:44px}}
+@media (min-width:700px){.w{max-width:900px}.bw{height:min(64vh,660px)}}
+#game{display:flex;flex-direction:column}
+#colL,#colR{display:contents}
+#pcard{order:1}#wallet{order:2}#mapcard{order:3}#wbox{order:4}#jobpick{order:5}#roll{order:6}#logcard{order:7}#res{order:8}#again{order:9}
+@media (min-width:900px) and (orientation:landscape){
+ body{padding:8px}.w{max-width:none}h1{font-size:16px;margin:0}
+ #game{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:8px;height:calc(100vh - 56px);height:calc(100dvh - 56px)}
+ #colL,#colR{display:flex;flex-direction:column;gap:8px;min-height:0}
+ #colL>*,#colR>*{margin:0}
+ #mapcard{flex:1;display:flex;flex-direction:column;min-height:0}
+ #mapcard .bw{flex:1;height:auto;min-height:0}
+ #wallet{flex:none;height:190px}
+ #logcard{flex:1;min-height:0;display:flex;overflow:hidden}
+ #log{flex:1;height:auto;min-height:0}
+ #pcard .note{display:none}
+ #wbox svg{width:176px;height:180px}
+ #jobpick{}
+}
+#ord{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;margin-bottom:8px}
+#ord span{padding:2px 9px;border-radius:12px;border:1px solid var(--bd);opacity:.55;white-space:nowrap}
+#ord span.on{opacity:1;font-weight:700;background:var(--sp)}
+#ord i{font-style:normal}
+.pp{border-left:8px solid var(--ac);padding:2px 0 2px 12px}
+.pph{font-size:22px;font-weight:800;line-height:1.3}
+.pph small{display:block;font-size:14px;font-weight:400;color:var(--sub);margin-top:2px}
+.vr{display:grid;grid-template-columns:112px 1fr;align-items:center;gap:8px;margin-top:11px;font-size:14px}
+.dl{font-size:13px;margin-left:4px;white-space:nowrap}.dl.up{color:#2f9e44}.dl.dn{color:#e03131}
+.vr .big{font-size:26px;font-weight:800}
+.vr .bar{width:100%;height:18px;border-radius:9px}
+.vr .bar i{border-radius:9px}
+#hand{display:none;position:fixed;inset:0;background:var(--bg);z-index:80;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:24px}
+#hand h2{font-size:34px;margin:0}
+#hand button{width:auto;padding:14px 34px;font-size:18px}
+#wallet{display:flex;gap:16px;align-items:stretch;padding:10px 14px;transition:box-shadow .3s}
+#wtop{min-width:150px;display:flex;flex-direction:column;justify-content:center}
+.wt{font-size:13px;color:var(--sub)}
+#wtot{font-size:30px;font-weight:800;line-height:1.2}
+#wdelta{height:26px;font-size:20px;font-weight:800;opacity:0}
+#wdelta.up{color:#2f9e44;animation:wd 1.7s}#wdelta.dn{color:#e03131;animation:wd 1.7s}
+@keyframes wd{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
+#wbills{flex:1;display:flex;flex-wrap:wrap;gap:6px 16px;align-items:flex-end;align-content:flex-end;overflow:hidden;min-width:0}
+.stk{width:100px}
+.stkb{position:relative;width:96px}
+.bill{position:absolute;left:0;width:96px;height:48px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+.bill.drop{animation:bd .75s cubic-bezier(.2,.8,.3,1.15) both}
+@keyframes bd{0%{transform:translateY(-90px) rotate(-10deg);opacity:0}100%{transform:none;opacity:1}}
+.stn{width:100px}.ntl{font-size:11px;font-weight:800;color:#8b1a1a}.bill.note{filter:drop-shadow(0 1px 1px rgba(80,0,0,.5))}
+.cnt{display:block;font-size:14px;font-weight:800;margin-top:3px;text-align:right}
+#wallet.up{box-shadow:0 0 0 3px #2f9e44 inset}#wallet.dn{box-shadow:0 0 0 3px #e03131 inset}
+@media (max-width:699px){#wallet{flex-direction:column;gap:6px}}
+
+#wallet{flex-direction:column;gap:8px;position:relative}
+#wmain{display:flex;gap:14px;flex:1;min-height:0;align-items:stretch}
+@media (max-width:699px){#wmain{flex-wrap:wrap}}
+#wmsg{font-size:12px;color:var(--sub);line-height:1.35;margin-top:2px}
+.stk{cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.stk .all{width:auto;margin:2px 0 0;padding:1px 7px;font-size:11px;min-height:0;background:var(--bg);color:var(--tx);border:1px solid var(--bd)}
+.stkf{display:flex;justify-content:space-between;align-items:center}
+#wallet.carry{cursor:copy;box-shadow:0 0 0 3px #e6a700 inset}
+
+#wallet.hold{cursor:grab}
+#cghost{position:fixed;z-index:200;pointer-events:none;display:flex;gap:4px;flex-wrap:wrap;align-items:flex-end;width:max-content;max-width:min(420px,70vw);padding:6px 8px;background:rgba(255,255,255,.9);border:2px solid #e6a700;border-radius:10px;transform:translate(14px,10px)}
+#cghost .stk{zoom:.6;width:100px}
+#cghost .gtot{width:100%;font-weight:800;font-size:16px;color:#222}
+#cghost .gprev{width:100%;font-size:12px;font-weight:700;color:#2f6f3e}
+#cghost .gprev.bad{color:#c92a2a}
+#wallet.carry #wcounter{opacity:.55}
+
+#wcounter{flex:none;align-self:flex-end;width:132px;height:64px;transition:transform .12s,filter .12s}
+#wcounter svg{display:block;width:100%;height:100%}
+#wcounter.over{transform:translateY(-3px);filter:drop-shadow(0 0 5px #2f9e44)}
+#wcounter.over.bad{filter:drop-shadow(0 0 5px #e03131)}
+#wtop{width:200px;flex:none;min-width:0}
+#wbills{align-content:flex-end}
+#wbox.shake{animation:shk .12s 4}@keyframes shk{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.stt{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin:4px 0}.stl{font-size:14px;color:var(--sub)}.chips{display:flex;flex-wrap:wrap;gap:5px}.chip{font-size:12px;font-weight:800;padding:3px 8px;border-radius:999px;background:#e9ecef;color:#495057}.chip.bad{background:#ffe3e3;color:#c92a2a}.chip.sick{background:#fff3bf;color:#8a5a00}.chip.ok{background:#d3f9d8;color:#2b8a3e}
+#ask{display:none;position:fixed;inset:0;z-index:75;background:rgba(30,25,20,.55);align-items:center;justify-content:center;padding:16px}
+#ask.on{display:flex}
+#askb{background:var(--bg);border-radius:18px;max-width:560px;width:100%;padding:20px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--bd);box-shadow:0 10px 40px rgba(0,0,0,.3)}
+#askt{font-size:22px;font-weight:800}
+#askx{font-size:15px;line-height:1.6;color:var(--tx);white-space:pre-wrap}
+#aska{display:flex;flex-direction:column;gap:8px}
+#aska button{margin:0;width:100%;text-align:left;padding:12px 16px;font-size:16px}
+#aska button.alt{background:var(--card);color:var(--tx);border:1px solid var(--bd)}
+.chip.t1{background:#e7f5ff;color:#1864ab}.chip.t2{background:#d0ebff;color:#0b5394;border:1px solid #74c0fc}.chip.t3{background:#ffdeeb;color:#a61e4d;border:1px solid #f783ac}.chip.mar{background:#fcc2d7;color:#a61e4d}
+
+/* ===== 縦回転ルーレット（人間関係・健康マス） ===== */
+#vroul{display:none;position:fixed;inset:0;z-index:72;background:rgba(20,16,12,.72);align-items:center;justify-content:center;padding:14px}
+#vroul.on{display:flex}
+#vrb{background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:16px 16px 14px;width:min(94vw,600px);display:flex;flex-direction:column;gap:8px;box-shadow:0 12px 50px rgba(0,0,0,.45)}
+#vrt{font-size:22px;font-weight:800;text-align:center}#vrs{font-size:13px;color:var(--sub);text-align:center;min-height:1.3em}
+#vrw{position:relative;height:330px;overflow:hidden;border-radius:14px;border:3px solid #333;background:var(--card)}
+#vrw.tense{animation:vtn .35s infinite alternate}@keyframes vtn{to{transform:scale(1.015)}}
+#vrw::before,#vrw::after{content:"";position:absolute;left:0;right:0;height:96px;z-index:2;pointer-events:none}
+#vrw::before{top:0;background:linear-gradient(var(--bg),transparent)}#vrw::after{bottom:0;background:linear-gradient(transparent,var(--bg))}
+#vrst{position:absolute;left:0;right:0;top:0;will-change:transform}
+.vrw{height:66px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 14px;border-bottom:2px solid rgba(128,128,128,.25);font-size:15px;line-height:1.35}
+.vrw .vt{flex:1;min-width:0}.vrw .vw{flex:none;font-size:13px;padding:3px 9px;border-radius:999px;color:#fff;white-space:nowrap}
+.vrw.up{background:var(--gain)}.vrw.up .vw{background:#2f9e44}.vrw.dn{background:var(--loss)}.vrw.dn .vw{background:#e03131}
+.vrw.win{outline:5px solid #d9480f;outline-offset:-5px;animation:vwn .35s 4 alternate}@keyframes vwn{to{filter:brightness(1.25)}}
+#vrm{position:absolute;left:0;right:0;top:132px;height:66px;z-index:3;pointer-events:none;border-top:4px solid #d9480f;border-bottom:4px solid #d9480f;box-shadow:0 0 14px rgba(217,72,15,.55)}
+#vrm::before,#vrm::after{content:"";position:absolute;top:50%;margin-top:-11px;border:11px solid transparent}
+#vrm::before{left:-2px;border-left-color:#d9480f;border-right:0}#vrm::after{right:-2px;border-right-color:#d9480f;border-left:0}
+#vrr{min-height:2.6em;text-align:center;font-size:17px;font-weight:800}
+
+/* ===== 拘留所ビュー ===== */
+#jailv{display:none;flex-direction:column;gap:8px;flex:1;min-height:0;overflow:auto;padding:4px;background:linear-gradient(#3a3d44,#2b2d33);border-radius:10px;color:#eee}
+.jh{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:15px}.jh span{color:#ced4da;font-size:13px}
+.jg2{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.jc{position:relative;border:2px solid #868e96;border-radius:10px;padding:6px 6px 4px;background:#4a4e57;min-height:92px;display:flex;flex-direction:column;gap:2px;font-size:12px;text-align:center}
+.jc small{position:absolute;left:5px;top:2px;color:#adb5bd;font-size:11px}.jc b{font-size:13px;margin-top:8px}.jc span{color:#dee2e6;font-size:11px}
+.jc.model{background:#2b8a3e;border-color:#8ce99a}.jc.solo{background:#862e2e;border-color:#ff8787}.jc.exit{background:#1864ab;border-color:#74c0fc}.jc.in{background:#5c5f66}
+.jt{display:flex;justify-content:center;gap:3px;margin-top:auto;min-height:26px}.jt .me{outline:3px solid #ffd43b;border-radius:50%}
+.jn{font-size:12px;color:#ced4da;line-height:1.6}
+
+#vrw{height:auto!important;max-height:80vh;overflow:auto}#vrw::before,#vrw::after,#vrm{display:none!important}
+#vrst{position:static!important;transform:none!important}
+.vrw{height:auto!important;min-height:46px;padding:5px 12px;font-size:14px;opacity:.62;transition:opacity .05s}
+.vrw .vn{flex:none;width:1.6em;height:1.6em;border-radius:50%;background:rgba(128,128,128,.35);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.vrw.cur{opacity:1;filter:brightness(1.12) saturate(1.3);outline:4px solid #f59f00;outline-offset:-4px;box-shadow:0 0 14px rgba(245,159,0,.7) inset}
+.vrw.win{opacity:1;outline-color:#d9480f}
+
+#vrgo.stp{background:#c92a2a!important}
+#vrgo{display:none;font-size:20px;font-weight:800;padding:14px;background:#d9480f;color:#fff;border:0}
+.vrw.pl{opacity:.75;background:var(--card)}.vrw.pl.cur,.vrw.pl.win{opacity:1}
+.vrw .vw.r0{background:#868e96}.vrw .vw.r1{background:#4dabf7}.vrw .vw.r2{background:#1c7ed6}.vrw .vw.r3{background:#e64980}.vrw .vw.rm{background:#c2255c}
+
+/* ===== カード＆ショップ ===== */
+#cardp{order:5;padding:8px 10px}
+.cph{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;margin-bottom:6px}
+.cph small{color:var(--sub);font-size:11px}
+.cps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ct{border:3px solid var(--bd);border-radius:10px;padding:5px 6px;display:flex;flex-direction:column;gap:2px;font-size:11px;background:var(--card);min-width:0}
+.ct.bad{background:repeating-linear-gradient(135deg,var(--card) 0 8px,rgba(224,49,49,.12) 8px 16px)}
+.ct .cn{font-weight:800;font-size:12px;line-height:1.25}
+.ct .cd{color:var(--sub);font-size:10px;line-height:1.3}
+.ct .cl{font-weight:800;font-size:12px}.ct .cl.warn{color:#e03131;animation:blk 1s infinite}
+@keyframes blk{50%{opacity:.45}}
+.ct button{padding:3px 6px;font-size:12px;min-height:30px;margin-top:auto}
+.ct .nou{font-size:10px;color:#c92a2a;font-weight:700;margin-top:auto}
+.ct.empty{border-style:dashed;opacity:.4;align-items:center;justify-content:center;min-height:56px;color:var(--sub)}
+#shopm{display:none;position:fixed;inset:0;z-index:74;background:rgba(30,25,20,.55);align-items:center;justify-content:center;padding:16px}
+#shopm.on{display:flex}
+#shopb{background:var(--bg);border-radius:18px;max-width:640px;width:100%;padding:18px;display:flex;flex-direction:column;gap:10px;border:1px solid var(--bd);box-shadow:0 10px 40px rgba(0,0,0,.3);max-height:94vh;overflow:auto}
+#shopt{font-size:22px;font-weight:800}#shopx{font-size:14px;line-height:1.6;white-space:pre-wrap}
+#shopc{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.shi{border:4px solid var(--bd);border-radius:12px;padding:8px;text-align:center;display:flex;flex-direction:column;gap:4px;background:var(--card)}
+.shi .shc{font-weight:800;font-size:13px}.shi .shq{font-size:26px;font-weight:800;min-height:2.4em;display:flex;align-items:center;justify-content:center;line-height:1.2}
+.shi .shq.on{font-size:14px}.shi .shp{font-weight:800}.shi button{margin:0}
+
+/* ===== 画像スロット（差し替え用）: 画像が無い時は絵文字/図形を表示、あれば自動で上書き ===== */
+.vis{--s:1.25em;display:inline-flex;align-items:center;justify-content:center;position:relative;width:var(--s);height:var(--s);aspect-ratio:1/1;flex:none;vertical-align:-.22em;overflow:hidden;line-height:1}
+.vis>.fb{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:calc(var(--s)*.8);line-height:1}
+.vis>.fb>.vis{--s:inherit;width:100%;height:100%}
+.vis>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;-webkit-user-drag:none;user-select:none}
+.vis.has>.fb{visibility:hidden}
+.vis.av{border-radius:50%}.vis.av>img{object-fit:cover}
+.avf{display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%;color:#fff;font-weight:800;font-size:calc(var(--s)*.5);line-height:1}
+.vis.card{display:flex;--s:100%;width:100%;height:auto;aspect-ratio:16/9;border-radius:12px;margin:0 0 10px;background:rgba(128,128,128,.12)}
+.vis.card>img{object-fit:cover}
+.vis.card:not(.has){display:none}
+.vis.ico{--s:1.15em}.chip .vis{--s:1.2em}
+.sq.art text{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
+.pphf{display:flex;align-items:center;gap:12px}
+#hav{display:flex;justify-content:center}
+#ord .vis{vertical-align:-.3em;margin-right:2px}
+body.dbg .vis,body.dbg .svis image{outline:1px dashed #e0f}
+body.dbg .vis::after{content:attr(data-slot);position:absolute;left:0;bottom:0;right:0;font-size:8px;line-height:1.1;background:rgba(224,0,255,.75);color:#fff;word-break:break-all;z-index:3;pointer-events:none}
+
+/* ===== 国勢（社会トレンド・大統領選挙）===== */
+#hd{flex-wrap:wrap}
+#soc{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:stretch;font-size:11px;line-height:1.25}
+#soc .grp{display:flex;flex-wrap:wrap;align-items:center;gap:3px 6px;padding:3px 8px;border-radius:12px;border:2px solid}#soc .grp.gv{border-color:#4263eb;background:rgba(66,99,235,.07)}#soc .grp.so{border-color:#e8590c;background:rgba(232,89,12,.07)}
+#soc .gl{font-weight:800;font-size:11px;white-space:nowrap}#soc .rd{align-self:center}
+#soc .sc{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;border:1px solid var(--bd);background:var(--card);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#soc .sc b{font-weight:800}#soc .sc small{color:var(--sub);font-size:10px}
+#soc .t-creator{background:#ffe3f1;border-color:#f06595;color:#7a1442}#soc .t-conserv{background:#e3f6e8;border-color:#51cf66;color:#1b5e2b}#soc .t-night{background:#2b2542;border-color:#7048e8;color:#e5dbff}
+body.rg-dict #bw,body.rg-anar #bw{filter:grayscale(1) contrast(1.08)}body.rg-dict #mapcard,body.rg-anar #mapcard{background:#d0d0d0}
+#soc .regb{background:#222;border-color:#000;color:#f1f3f5;font-weight:800;animation:rgp 1.6s infinite}#soc .regb.rg-anar{background:#5c0a0a;border-color:#ff6b6b}@keyframes rgp{50%{opacity:.62}}
+#soc .pres{background:#fff3cd;border-color:#f0c040;color:#5c4400}
+#soc .sc small{color:inherit;opacity:.8}
+#elec{display:none;position:fixed;inset:0;z-index:78;background:rgba(20,20,35,.62);align-items:center;justify-content:center;padding:12px;overflow:auto}
+#elec.on{display:flex}
+#elecb{background:var(--bg);border-radius:18px;max-width:860px;width:100%;padding:16px 18px;border:1px solid var(--bd);box-shadow:0 10px 40px rgba(0,0,0,.35);max-height:96vh;overflow:auto}
+#elect{font-size:20px;font-weight:800}#elecx{font-size:13px;color:var(--sub);margin:4px 0 10px;line-height:1.5}
+#eleccs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:620px){#eleccs{grid-template-columns:1fr}}
+.cand{background:var(--card);border:2px solid var(--bd);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.cand.win{border-color:#f0a000;box-shadow:0 0 0 3px rgba(240,160,0,.35)}
+.cand .ch{display:flex;gap:10px;align-items:center;margin:0}
+.cand .cn{font-size:17px;font-weight:800}.cand .ci{display:inline-block;font-size:12px;font-weight:800;color:#fff;border-radius:10px;padding:1px 9px}
+.cand .cm{font-size:13px;font-weight:700;line-height:1.45}
+.cand ul{margin:0;padding:0;list-style:none;font-size:12.5px;line-height:1.5}
+.cand li.pro::before{content:'⭕ ';}.cand li.con::before{content:'⚠️ ';}
+.cand li.pro{color:#1b7a34}.cand li.con{color:#c92a2a}
+.cand button{margin-top:6px}
+.cbar{height:12px;border-radius:6px;background:rgba(128,128,128,.25);overflow:hidden;margin-top:4px}.cbar i{display:block;height:100%}
+#elecf{margin-top:10px}#elecf button{margin-top:0}
+.vis.cd{--s:76px;border-radius:50%}.vis.cd>img{object-fit:cover}
+#toast{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:90;background:#222;color:#fff;padding:8px 16px;border-radius:12px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.4);display:none;max-width:92vw;text-align:center}
+</style>
+</head>
+<body>
+<div class="w">
+<div id="hd"><h1>🎲 Anyones</h1><div id="soc"></div><button id="fsb">⛶ 全画面</button></div>
+<div id="fsmsg"></div>
+
+<div id="setup" class="card">
+  <div class="mrow"><button id="modeLocal" style="background:#2f9e44">🏠 1台で交代して遊ぶ</button><button id="modeNet" style="background:#1c7ed6">🌐 オンライン対戦（複数端末）</button></div>
+  <label>ゲームモード</label>
+  <select id="mode"><option value="200">短期戦（200マス）</option><option value="500" selected>スタンダード（500マス）</option><option value="1000">長期戦（1000マス）</option></select>
+  <div class="note" id="est"></div>
+  <label>盤面シード（同じ文字なら同じ盤面。空欄ならランダム）</label>
+  <input id="seed" placeholder="例：abc123">
+  <label>プレイヤー人数（最大6人）</label>
+  <select id="cnt"></select>
+  <div id="rows"></div>
+  <div class="note">各行：名前／人間・CPU。職業は序盤（30マス目あたり）の「職業選択」マスで、プレイスタイルから絞り込んで選びます。</div>
+  <button id="start">ゲーム開始</button>
+</div>
+
+<div id="game" class="hide">
+ <div id="colL">
+  <div class="card" id="mapcard"><div id="jailv"></div><div class="bw" id="bw"><svg id="map" width="1700" height="1040" viewBox="0 0 1700 1040"></svg></div><div class="note">⛔ 赤い札のついた大きなマスは「ストップマス」（必ず止まる強制イベント）。職業を決めたあとのマスは、手番プレイヤーの職業に合わせた盤面を表示します。<br>マスは1つにつき変わる値は1つだけ（大きなストップマスを除く）。【資産】緑＝収入（職業に関係なく一定）／濃い橙＝給料日（ここだけ職業で額が変わる）／赤＝支出／橙＝税務署・修行／紫＝SNS／灰＝摘発／ピンク＝プレイヤー同士のお金のやり取り（寄付マスだけは例外で、資産と人間関係の両方が動く）　【人間関係】薄紫＝人間関係イベント／水色＝友情イベント　【健康】黄緑＝健康イベント　【救済】金＝救済マス（条件に当てはまる人だけ助かる）　🛒＝マス間の通り抜けショップ（止まらず立ち寄れる。カードは最大3枚・持てるのは5ターンまで）</div></div>
+  <div class="card" id="wallet"><div id="wmain"><div id="wtop"><div class="wt">👛 <span id="wown"></span>の所持金</div><div id="wtot">0円</div><div id="wdelta"></div><div id="wmsg"></div></div><div id="wbills"></div><div id="wcounter"></div></div></div>
+ </div>
+ <div id="colR">
+  <div class="card" id="pcard"><div id="ord"></div><div id="pp"></div><div class="note">幸福値＝（資産Pt＋人間関係値＋健康値）÷3。資産Ptは「全員の平均所持金に対して自分がどれだけ持っているか」（平均と同じ額＝100Pt、平均の半分＝50Pt、上限100）で、人数が変わっても同じ感覚です。マイナスは0円として扱います。人間関係値と健康値は0〜100（健康値が0になると入院）。同じマスに止まったプレイヤーとは友達になります。</div></div>
+  <div class="card" id="cardp"></div>
+  <div id="wbox"><button id="mute" title="効果音">🔊</button><svg id="wsv" viewBox="-108 -112 216 220" width="230" height="234"></svg></div>
+  <div id="jobpick" class="hide"><div id="jpbox"><div id="jl"></div></div></div>
+  <button id="roll">🎲 ルーレットを回す</button>
+  <div class="card" id="logcard" style="margin-top:10px"><div id="log"></div></div>
+  <div id="res" class="card hide"></div>
+  <button id="again" class="hide">もう一度遊ぶ</button>
+ </div>
+</div>
+</div>
+<div id="netm"><div id="netb">
+ <div id="net1"><h2>🌐 マルチプレイ接続</h2><div class="note">端末ごとに1人ずつ参加します（最大6人）。ホストが部屋を作り、表示された「ルームID」を友達に伝えてください。</div>
+  <label>あなたの名前</label><input id="nname" maxlength="10" placeholder="例：たろう">
+  <div class="row"><button id="nhost">👑 部屋を作る</button><button id="njoin" style="background:#1c7ed6">🚪 部屋に入る</button></div>
+  <div id="njf" style="display:none"><label>ルームID（4〜6桁の数字）</label><div class="row"><input id="ncode" inputmode="numeric" maxlength="6" placeholder="12345"><button id="njgo" style="width:40%">接続</button></div></div>
+ </div>
+ <div id="net2" style="display:none"><h2>🛋 ロビー</h2><div class="note">ルームID（友達に伝えてください）</div><div id="ncodev"></div><button id="ncopy" class="alt" style="margin:0 0 8px">IDをコピー</button>
+  <div id="nlobbyinfo" class="note"></div><div id="nseats"></div>
+  <div id="nhostctl"><label>ゲームモード</label><select id="nmode"></select><label>盤面シード（空欄でランダム）</label><input id="nseed" placeholder="例：abc123">
+   <div class="row"><button id="naddcpu" class="alt">🤖 CPUを追加</button><button id="nstart">▶ ゲーム開始</button></div></div>
+  <div id="nguestw" class="note" style="display:none;margin-top:10px">ホストがゲームを開始するのを待っています…</div>
+ </div>
+ <div id="net3" style="display:none"><h2>📴 接続が切れました</h2><div class="note">ホストとの接続が切れたため、ゲームを続けられません。</div><button id="nreload">最初に戻る</button></div>
+ <div id="nmsg"></div><button id="nclose" class="alt">閉じる</button>
+</div></div><div id="netbar"></div>
+<svg id="wdefs" width="0" height="0" style="position:absolute" aria-hidden="true"></svg>
+
+<script>
+let N=140,MAND=[],SEED=1,CFG=null,SC=1;
+const rs=r=>1-Math.pow(1-r,Math.min(1,160/N));
+const EVN={pick:'職業選択',salary:'初任給',career:'人生の転機',mid:'人生の見直し',fest:'大感謝祭',intro:'運命の出会い',marry:'結婚マス'};
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const hashS=s=>[...String(s)].reduce((a,c)=>(Math.imul(a,31)+c.charCodeAt(0))|0,7);
+function shuf(a,rng){for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const R=x=>x.map(([t,n,a,st])=>({t,n,a,st}));
+// 共通マス（職業選択前）と就活ゾーン（職業選択の直後4マス）
+const COMMON=R([['g','バイト',60],['l','学費',50],['g','お年玉',40],['g','奨学金',70],['l','教科書',30],['g','試験合格',100],['l','引越し',50],['g','仕送り',80],['l','旅行',60],['l','外食',40],['n','SNS'],
+ ['r','友達',0,1],['r','部活',0,1],['r','文化祭',0,1],['r','クラス',0,1],['r','恋愛',0,1],['r','放課後',0,1],['r','友達',0,1],['r','部活',0,1],['r','クラス',0,1],['r','放課後',0,1],['r','文化祭',0,1],
+ ['h','体育',0,1],['h','健康',0,1],['h','部活',0,1]]);
+const PRE=R([['l','スーツ代',60],['g','インターン',80],['l','資格試験',40],['g','内定祝い',100]]);
+// ===== 職業テーブル =====
+// c:0=手堅い 1=実力型(修行で実力LV→収入UP) 2=高リスク高収入／s:収入規模 mul:収入倍率 tax:税率 arrest:摘発時の逮捕率
+const J={
+ 警察官:{fx:[0,-1.3],c:0,e:'👮',d:'【治安の守り手】警察署の厳格度が収入に直結／臨時逮捕マスを設置／摘発数で給料日ボーナス／共済で通院代半額',s:1.1,G:['給与','手当','賞与'],L:['家賃','共済掛金','装備費']},
+ 税務官:{fx:[0,-1.2],c:0,e:'🧾',d:'【徴税のプロ】税務署の厳格度が収入に直結／臨時税金マスを設置／徴税額で給料日ボーナス／共済で通院代半額',s:1.1,G:['給与','手当','賞与'],L:['家賃','共済掛金','研修費']},
+ 教師:{fx:[1,-1],c:0,e:'📚',d:'【指導力】人間関係のプラス効果にボーナス（×1.3）',s:1.12,G:['給与','部活手当','賞与'],L:['教材費','家賃','保護者対応']},
+ 看護師:{fx:[2,-1],c:0,e:'🩺',d:'【早期治癒】病気・入院の期間が短縮、デバフ付与率も半減',s:1.22,G:['給与','夜勤手当','賞与'],L:['家賃','資格更新','腰痛ケア']},
+ 薬剤師:{fx:[0,-1],c:0,e:'💊',d:'【早期治癒】病気・入院の期間が短縮、デバフ付与率も半減',s:1.18,G:['給与','調剤手当','賞与'],L:['家賃','学会費','薬局設備']},
+ 運送ドライバー:{fx:[0,-1.2],c:0,e:'🚚',d:'【ロングレンジ】ルーレットが1〜12になる',s:1.08,G:['運賃','深夜手当','賞与'],L:['燃料費','家賃','修理代']},
+ 建設作業員:{fx:[1,-1],c:0,e:'🏗',d:'【ロングレンジ】ルーレットが1〜12になる',s:1.05,G:['日当','危険手当','賞与'],L:['道具代','家賃','現場移動']},
+ 経営者:{fx:[0,-0.5],c:1,e:'👔',d:'【マネーリターン】実力で稼ぎ、収入に常時+20%',s:.75,mul:1.2,K:'経営セミナー',G:['売上','出資','事業売却'],L:['人件費','設備投資','接待費']},
+ プロスポーツ選手:{fx:[0,-0.4],c:1,e:'🏅',d:'【フィジカル強化】トレーニング効率2倍／ケガのリスクもやや高い',s:.7,K:'トレーニング',G:['年俸','スポンサー','優勝賞金'],L:['遠征費','ケガの治療','トレーナー代']},
+ 漫画家:{fx:[0,-0.6],c:1,e:'✏️',d:'【一撃の大ヒット】転機・SNSマスで大当たりが出やすい（ハズレもある）',s:.8,K:'作画修行',G:['原稿料','単行本印税','アニメ化'],L:['アシ代','画材','締切地獄']},
+ 投資家:{fx:[0,-0.4],c:1,e:'📈',d:'【マネーリターン】分析力が収益に直結、収入に常時+20%',s:.66,mul:1.2,K:'市場分析',G:['配当','売却益','株主優待'],L:['手数料','損切り','情報料']},
+ ホスト:{fx:[3,-0.4],c:2,e:'🥂',d:'【夜の蝶のマネーフロー】収入×1.5／税60%／摘発の罰金が重い',s:2.7,mul:1.5,tax:.6,arrest:.22,fine:.6,skipN:3,G:['指名','シャンパン','太客'],L:['衣装代','飲み代','美容']},
+ キャバ嬢:{fx:[4,-0.5],c:2,e:'💄',d:'【夜の蝶のマネーフロー】収入×1.5／税60%／摘発の罰金が重い',s:2.55,mul:1.5,tax:.6,arrest:.3,fine:.6,skipN:3,G:['指名','ドンペリ','同伴'],L:['ドレス代','美容','送迎代']},
+ 配信者:{fx:[4,-0.5],c:2,e:'📺',d:'【バズと大炎上】SNSで大儲け／一定確率で所持金が半分に',s:6.5,t:3,tax:0.15,arrest:0.08,G:['投げ銭','企業案件','グッズ'],L:['機材','ネタ切れ','炎上対策']},
+ 転売ヤー:{fx:[3,-0.6],c:2,e:'📦',d:'【グレーゾーンの荒稼ぎ】収入×1.3／規制・トレンド変動の直撃／逮捕リスク大',s:2.3,mul:1.3,tax:.4,arrest:.3,G:['転売益','せどり','限定品'],L:['仕入れ','送料','在庫処分']},
+ 人間:{x:1,fx:[0,-.8],c:0,e:'🧍',d:'【ただの人間】独裁・無政府状態で全員に与えられる共通の身分',s:.9,G:['日雇い','配給','小銭'],L:['食費','闇市','修繕']}
+};
+const JL=()=>Object.keys(J).filter(k=>!J[k].x);
+const TPL=['glgngllgrlgtglrglnhrhr','gklgklglkrlgtkglgrhrhr','ggltgallgrgatglgrlhrhr','ngltnallgrnatglnrlhrhr'];
+const GA=[100,80,150,70,120,90,130],LA=[60,30,40,60,50];
+function pat(job){const j=J[job];let gi=0,li=0;
+  return TPL[j.t||j.c].split('').map(ch=>{
+    if(ch==='g'){const a=Math.round(GA[gi%7]*j.s/10)*10;return{t:'g',n:j.G[gi++%3],a}}
+    if(ch==='l')return{t:'l',n:j.L[li%3],a:LA[li++%5]};
+    if(ch==='k')return{t:'k',n:j.K};
+    return{t:ch,n:{t:'税務署',n:'SNS',a:'摘発'}[ch]};
+  })}
+const XK=[
+ {k:'collect',n:'集金',tx:['集金！','【資産】','全員から','3,000円ずつ']},
+ {k:'treat',n:'おごり',tx:['おごり','【資産】','全員に','2,000円ずつ']},
+ {k:'duel',n:'対決',tx:['対決！','【資産】','相手と勝負','勝敗で±1万円']},
+ {k:'steal',n:'妨害',tx:['妨害','【資産】','首位から','10%を奪う']},
+ {k:'robin',n:'寄付の日',tx:['寄付の日','【資産＋関係】','最下位を','お金で助ける']},
+ {k:'back',n:'おじゃま',tx:['おじゃま','【位置】','相手を','5マス戻す']}];
+// ===== 盤面の自動生成（シード固定：同じシード＝同じ盤面。オンライン同期にも使える設計） =====
+function genBoard(seed,n){
+  const rng=mulberry32(seed);
+  const pick=30,sal=pick+5,E=Math.round(n/50),mand=[{i:pick,k:'pick'},{i:sal,k:'salary'}];
+  for(let j=0;j<E;j++)mand.push({i:sal+Math.round((j+1)*(n-1-sal)/(E+1)),k:['career','mid','fest'][j%3]});
+  const used0=new Set(mand.map(m=>m.i));
+  let ii=Math.max(3,Math.min(20,pick-3));while(used0.has(ii))ii++;mand.push({i:ii,k:'intro'});used0.add(ii);
+  let mi=Math.round(n*.3);while(used0.has(mi)||(mi>=pick&&mi<=sal))mi++;mand.push({i:mi,k:'marry'});
+  const used=new Set(mand.map(m=>m.i)),common=[],x={};
+  let bag=[],prev='',last=-9;
+  for(let i=1;i<pick;i++){
+    if(!bag.length)bag=shuf(COMMON.slice(),rng);
+    let idx=bag.findIndex(c=>'gl'.includes(c.t)||c.t!==prev);
+    if(idx<0){bag=bag.concat(shuf(COMMON.slice(),rng));idx=bag.findIndex(c=>'gl'.includes(c.t)||c.t!==prev)}
+    const c=bag.splice(idx,1)[0];prev=c.t;common.push(c);
+  }
+  for(let i=2;i<n-3;i++){
+    if((i>=pick&&i<=sal)||used.has(i)||i-last<4)continue;
+    if(rng()<.25){x[i]=Math.floor(rng()*XK.length);last=i}
+  }
+  const f={};let lf=-9;
+  for(let i=2;i<n-3;i++){
+    if((i>=pick&&i<=sal)||used.has(i)||x[i]!==undefined||i-lf<4)continue;
+    if(rng()<(i<pick?.16:.08)){f[i]=Math.floor(rng()*FK.length);lf=i}
+  }
+  // 救済マス：条件に当てはまる人にだけ効く（条件は画面に出さない）
+  const v={};let lv=-99;
+  for(let i=sal+3;i<n-3;i++){
+    if(used.has(i)||x[i]!==undefined||f[i]!==undefined||i-lv<6)continue;
+    if(rng()<.055){v[i]=Math.floor(rng()*RK.length);lv=i}
+  }
+  // 給料日マス：初任給のあとに約8か所（この給料日だけが「職業による収入差」を受け取る）
+  const pd={};
+  {const cnt=8,span=n-4-(sal+1);
+   for(let j=0;j<cnt;j++){const c=sal+1+Math.round((j+.5)*span/cnt)+Math.floor(rng()*5)-2;let done=false;
+     for(let d=0;d<40&&!done;d++)for(const t of [c+d,c-d]){
+       if(t>sal&&t<n-3&&!used.has(t)&&x[t]===undefined&&f[t]===undefined&&v[t]===undefined&&pd[t]===undefined&&Object.keys(pd).every(k=>Math.abs(k-t)>=3)){pd[t]=1;done=true;break}}}}
+  return{n,pick,sal,mand,common,x,f,v,pd,marry:mi};
+}
+// 救済マス（k=種類）。ok=条件を満たした時の処理／no=条件に当てはまらない時の「もっともらしい理由」
+const RK=[
+ {k:'rest',n:'休養の日',tx:['休養の日','【健康】','ゆっくり','ひと休み'],
+  no:['温泉宿でひと休みしたが、まだ体力に余裕があり、いつもの休日で終わった。','休暇をとって散歩に出かけた。体調は悪くなく、ただの気分転換になった。','整体に行ってみたが「とくに問題ありませんね」と言われ、軽くマッサージされただけだった。']},
+ {k:'clinic',n:'無料健診',tx:['無料健診','【健康】','町の診療所の','お知らせ']},
+ {k:'reunion',n:'旧友の連絡',tx:['旧友の連絡','【人間関係】','久しぶりの','連絡が届く']},
+ {k:'volun',n:'ボランティア',tx:['ボランティア','【人間関係】','地域活動の','誘いが来る']},
+ {k:'tokusei',n:'徳政令',tx:['徳政令','【資産】','お上からの','お触れ']},
+ {k:'aid',n:'生活支援',tx:['生活支援','【資産】','窓口の','相談会']}];
+const FK=[
+ {k:'wed',n:'友達の結婚式',tx:['友達の結婚式','【人間関係】','招かれるかは','友達の数しだい']},
+ {k:'help',n:'友達の助け',tx:['友達の助け','【人間関係】','頼れる友達が','いるか？']},
+ {k:'trial',n:'友情の試練',tx:['友情の試練','【人間関係】','ぶつかり合い','絆の分かれ道']},
+ {k:'reunion',n:'同窓会',tx:['同窓会','【人間関係】','友達の数が','カギ']}];
+let SQ,SQS={};
+function sq(job){const k=job||'-';return SQS[k]||(SQS[k]=build(job))}
+function build(job){
+  const C=CFG,n=C.n,SQ=[{t:'s',n:'スタート'}],rng=mulberry32(SEED^hashS(job||'-')),j=job&&J[job];
+  let bag=[],prev='',gi=0,li=0,extra=0;const NF=.35;
+  for(let i=1;i<n-1;i++){
+    let q;
+    if(i<C.pick)q=C.common[i-1];
+    else if(i<=C.sal)q=PRE[i-C.pick-1]||{t:'m',n:''};
+    else if(j){
+      if(!bag.length)bag=shuf(TPL[j.t||j.c].split(''),rng);
+      let idx=bag.findIndex(c=>'gl'.includes(c)||c!==prev);
+      if(idx<0){bag=bag.concat(shuf(TPL[j.t||j.c].split(''),rng));idx=bag.findIndex(c=>'gl'.includes(c)||c!==prev)}
+      const ch=bag.splice(idx,1)[0],k=Mat(i,C)/100/37;prev=ch;
+      if(ch==='g'){const old=Math.max(10,Math.round(GA[gi%7]*j.s*k/10)*10),nw=Math.max(10,Math.round(GA[gi%7]*NF*k/10)*10);extra+=old-nw;q={t:'g',n:j.G[gi%3],a:nw};gi++}
+      else if(ch==='l'){q={t:'l',n:j.L[li%3],a:Math.max(10,Math.round(LA[li%5]*k/10)*10)};li++}
+      else if(ch==='k')q={t:'k',n:j.K};
+      else q={t:ch,n:{t:'税務署',n:'SNS',a:'摘発'}[ch]};
+    }else q={t:'u',n:'？'};
+    SQ.push({...q});
+  }
+  SQ.push({t:'G',n:'ゴール'});
+  if(job){const pds=Object.keys(C.pd||{}).map(Number),P=Math.max(20,Math.round(extra/Math.max(1,pds.length)/10)*10);pds.forEach(i=>{SQ[i]={t:'p',n:'給料日',a:P}})}
+  Object.keys(C.v||{}).forEach(i=>{i=+i;if(job&&i>C.sal&&i<n-1){const rk=RK[C.v[i]];SQ[i]={t:'v',k:rk.k,n:rk.n,tx:rk.tx}}});
+  Object.keys(C.x).forEach(i=>{i=+i;if(i<=C.sal||job){const xk=XK[C.x[i]];SQ[i]={t:'x',k:xk.k,n:xk.n,tx:xk.tx}}});
+  Object.keys(C.f).forEach(i=>{i=+i;if(i<=C.sal||job){const fk=FK[C.f[i]];SQ[i]={t:'f',k:fk.k,n:fk.n,tx:fk.tx}}});
+  C.mand.forEach(({i,k})=>SQ[i]={t:'m',k,n:EVN[k]});
+  SQ.forEach((q,i)=>assignEv(q,i));
+  return SQ;
+}
+
+const COLS=['#d9480f','#1c7ed6','#2f9e44','#ae3ec9','#f08c00','#0ca678','#e03131','#495057'];
+let S,PL=[],cur=0,fin=0,busy=false,mapJob='';
+const $=id=>document.getElementById(id);
+const NET={on:false,host:false,me:-1,peer:null,conns:{},wait:-1,code:''};
+const WI=()=>NET.on&&NET.me>=0?NET.me:cur;
+const mine=()=>!NET.on||(PL[cur]&&PL[cur].id===NET.me);
+
+// ===== 画像スロット（差し替え用）=====
+// 使い方：images/ 以下に <カテゴリ>/<キー>.png を置くだけで、該当箇所が画像に差し替わります。
+//   例) images/avatars/driver.png（運送ドライバーのアバター）, images/jobs/nurse.png（看護師の職業アイコン）
+// 画像が無い場合は従来の絵文字・図形がそのまま表示されます。 ?slots を付けて開くと全スロットのパスが枠付きで見えます。
+// 拡張子やフォルダ変更・個別の差し替えは下の ASSETS で指定（例：override:{'jobs/salaryman':'img/sara.webp'}）
+const ASSETS={dir:'images',ext:'png',override:{}};
+const JK={警察官:'police',税務官:'tax_officer',教師:'teacher',看護師:'nurse',薬剤師:'pharmacist',運送ドライバー:'driver',建設作業員:'construction',経営者:'ceo',投資家:'investor',漫画家:'mangaka',プロスポーツ選手:'athlete',ホスト:'host',キャバ嬢:'cabaret',配信者:'streamer',転売ヤー:'reseller',人間:'human'};
+const SQN={s:'start',g:'gain',l:'loss',t:'tax',n:'sns',G:'goal',u:'unknown',x:'special',k:'skill',a:'arrest',h:'health',r:'relation',f:'story',v:'rescue',p:'payday'};
+const STOPK=['pick','salary','career','mid','fest','intro','marry'];
+const ICOK={bond:'💞',hp:'❤️',happy:'😊',pos:'📍',state:'🩺',rel:'🤝',tar:'🚬',alc:'🍶',sick:'🤒',married:'💍',engaged:'💍'};
+const aurl=(cat,key)=>{const id=cat+'/'+key;return ASSETS.override[id]||`${ASSETS.dir}/${id}.${ASSETS.ext}`};
+const PROBE={};
+function probe(u){if(u in PROBE)return;PROBE[u]=-1;const im=new Image();im.onload=()=>PROBE[u]=1;im.onerror=()=>PROBE[u]=0;im.src=u}
+const slotOk=u=>PROBE[u]!==0;   // 存在しないと判明している画像は出力しない（404連発を防ぐ）
+function imgOk(i){const p=i.parentNode;if(!p)return;
+  if(i.hasAttribute('data-keep')){p.classList.add('art');return}
+  if(i instanceof SVGElement){[...p.children].forEach(c=>{if(c!==i)c.setAttribute('display','none')})}
+  else p.classList.add('has')}
+function imgNg(i){i.remove()}
+// HTML用スロット：<span class="vis"> 内に fallback と <img> を重ねる（画像が読めたら fallback を隠す）
+function vis(cat,key,fb,cls,sz){const u=aurl(cat,key);
+  return `<span class="vis ${cls||''}" data-slot="${cat}/${key}"${sz?` style="--s:${sz}"`:''}><span class="fb">${fb||''}</span>${slotOk(u)?`<img src="${u}" alt="" draggable="false" onload="imgOk(this)" onerror="imgNg(this)">`:''}</span>`}
+// SVG用スロット：fallback(SVG断片) と <image> を同じ <g> に入れる
+function svis(cat,key,x,y,w,h,fb,extra,par){const u=aurl(cat,key);
+  return `<g class="svis" data-slot="${cat}/${key}">${fb||''}${slotOk(u)?`<image href="${u}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="${par||'xMidYMid meet'}" ${extra||''} onload="imgOk(this)" onerror="imgNg(this)"/>`:''}</g>`}
+const ic=(k,fb)=>vis('icons',k,fb||ICOK[k],'ico');
+const jobIcon=(k,sz)=>vis('jobs',JK[k],J[k].e,'ji',sz);
+const SQK=t=>SQN[t]||t;
+// アバター：職業別(avatars/<職業キー>) → プレイヤー別(avatars/player1〜6) → 色付きの丸＋頭文字、の順にフォールバック
+function avHTML(p,sz){const fb=`<span class="avf" style="background:${p.col}">${esc([...p.name][0]||'?')}</span>`;
+  const inner=vis('avatars','player'+(p.id+1),fb,'av',sz);
+  return p.job?vis('avatars',JK[p.job],inner,'av',sz):inner}
+function avSvg(p,r){const d=r*2,cl='clip-path="url(#ct)"';
+  const fb=`<circle r="${r}" fill="${p.col}"/><text y="${r*.45}" font-size="${r*1.1}" font-weight="700" text-anchor="middle" fill="#fff">${p.id+1}</text>`;
+  const inner=svis('avatars','player'+(p.id+1),-r,-r,d,d,fb,cl,'xMidYMid slice');
+  return p.job?svis('avatars',JK[p.job],-r,-r,d,d,inner,cl,'xMidYMid slice'):inner}
+function allSlots(){const L=[],a=(c,k,w,h,n)=>L.push({path:aurl(c,k),slot:c+'/'+k,w,h,note:n});
+  for(let i=1;i<=6;i++)a('avatars','player'+i,512,512,'プレイヤー'+i+'のアバター（正方形・丸く切り抜き表示）');
+  JL().forEach(k=>a('avatars',JK[k],512,512,k+'のアバター（職業選択後に、プレイヤーアバターより優先して表示）'));
+  JL().forEach(k=>a('jobs',JK[k],256,256,k+'の職業アイコン'));
+  a('avatars','human',512,512,'人間（独裁／無政府状態の共通身分）のアバター');a('jobs','human',256,256,'人間のアイコン');
+  [['role_dog','国家の犬'],['role_rev','革命家'],['role_farm','農民'],['role_loot','略奪者']].forEach(([k,n])=>a('jobs',k,256,256,n+'（極限状態の専用ロール）のアイコン'));
+  Object.keys(SQN).forEach(t=>a('squares',SQN[t],288,200,'通常マス「'+SQN[t]+'」の背景絵（72×50の比率で全面表示・文字は上に重なる）'));
+  STOPK.forEach(k=>a('stops',k,176,176,'ストップマス「'+k+'」のアイコン（中央に表示）'));
+  for(let i=0;i<4;i++)a('map','stage'+i,1700,140,'第'+(i+1)+'章の帯背景（横長・全面表示）');
+  Object.keys(SQN).concat(STOPK).forEach(k=>a('events',k,960,540,'イベント表示カードの画像 16:9（'+k+'）'));
+  a('events','dialog',960,540,'選択ダイアログ上部の画像 16:9');
+  DEN.forEach(d=>a('bills',d,640,320,d.toLocaleString()+'円札（2:1）'));
+  a('bills','note',640,320,'約束手形（所持金がマイナスのときに発行・1枚=-1,000円、2:1）');
+  Object.keys(ICOK).forEach(k=>a('icons',k,128,128,'小アイコン（'+k+'）'));
+  Object.keys(IDEO).forEach(k=>a('candidates',k,512,512,'大統領候補（'+IDEO[k].n+'）の顔写真・アイコン（丸く切り抜き）'));
+  Object.keys(TRD).forEach(k=>a('society',k,128,128,'社会トレンド「'+TRD[k].n+'」のアイコン'));
+  a('society','president',128,128,'大統領バッジのアイコン');
+  a('ui','logo',128,128,'タイトルロゴ');
+  a('map','shop',128,128,'マス間の通り抜けショップの目印アイコン');
+  Object.keys(CD).forEach(k=>a('cards',k,256,256,'カード「'+CD[k].n+'」の絵（'+CCAT[CD[k].cat].n+'・'+(CD[k].bad?'害カード':'優良カード')+'）'));
+  return L}
+window.listSlots=()=>{const L=allSlots();console.table(L);return L};
+if(typeof location!=='undefined'&&/[?&]slots/.test(location.search))document.addEventListener('DOMContentLoaded',()=>document.body.classList.add('dbg'));
+
+// 内部の金額は100円単位（内部の10＝1,000円）。金額は常に1,000円単位で動かし、最小額は1,000円
+const pz=v=>Math.max(0,v);
+const fmt=n=>(Math.round(n*100)).toLocaleString()+'円';
+const r10=x=>Math.max(10,Math.round(x/10)*10);
+const lp=(m,r)=>m<=0?0:Math.min(m,r10(m*r));
+let CAP=null,STORY='';
+const log=(m,c,raw)=>{if(CAP)CAP.push(m);const d=document.createElement('div');d.textContent=(S&&!raw?`【${S.name}】`:'')+m;if(c)d.style.color=c;$('log').prepend(d);if(NET.on&&NET.host&&NET.started)NET.logs.push([d.textContent,c||null])};
+function add(n,raw,fixed){
+  const j=J[S.job];
+  if(n>0)n=r10(n);
+  if(!raw&&n>0&&j){const m=fixed?(PRES?(PRES.pol.inc||1):1):(j.mul||1)*(j.c===1?1+.5*S.skill:1)*incMulFor(S.job);if(Math.abs(m-1)>1e-9){const r=r10(n*m);log(`　（${S.job}補正 ×${+m.toFixed(2)}：${fmt(n)}→${fmt(r)}）`);n=r}}
+  if(n>0&&!raw&&hasC(S,'sabo')){const r=Math.max(10,r10(n/2));log(`　（${'サボりマン'}の呪い：収入が半額 ${fmt(n)}→${fmt(r)}）`,'crimson');n=r}
+  S.money+=n;if(n>0)S.earn=(S.earn||0)+n;return n;
+}
+const opt=(l,s)=>l.map((x,i)=>`<option${i===s?' selected':''}>${x}</option>`).join('');
+$('cnt').innerHTML=[1,2,3,4,5,6].map(n=>`<option${n===4?' selected':''}>${n}人</option>`).join('');
+function rows(){
+  const n=parseInt($('cnt').value);let s='';
+  for(let i=0;i<n;i++)s+=`<div class="pr"><span style="color:${COLS[i]}">●</span><input id="n${i}" maxlength="6" value="${i?'CPU':'P'}${i+1}"><select id="t${i}"><option value="0">人間</option><option value="1"${i?' selected':''}>CPU</option></select></div>`;
+  $('rows').innerHTML=s;
+}
+function est(){
+  const n=parseInt($('cnt').value);let hu=0;
+  for(let i=0;i<n;i++)if($('t'+i)&&$('t'+i).value==='0')hu++;
+  const NN=parseInt($('mode').value),min=Math.round(NN/5.5*(hu*18+(n-hu)*9)/60);
+  $('est').textContent=`${NN}マス／所要時間の目安：約${min>=60?(min/60).toFixed(1)+'時間':min+'分'}（人間${hu}人・CPU${n-hu}人の場合）。人数が多いほど長くなります。`;
+}
+$('cnt').onchange=()=>{rows();est()};$('setup').onchange=est;rows();est();
+function setMap(job){const k=job||'-';if(mapJob!==k){mapJob=k;SQ=sq(job);buildMap()}}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let P=[],HH=1000;
+function makeP(){
+  P=[];const R=Math.ceil(N/20);
+  for(let i=0;i<N;i++){
+    const r=Math.floor(i/20),k=i%20,rtl=r%2===1,y0=90+r*140;
+    if(r===R-1||k<18)P.push([rtl?1490-k*80:130+k*80,y0+Math.sin(k*.7+r)*14]);
+    else P.push([rtl?45:1575,y0+(k===18?45:95)]);
+  }
+  HH=90+(R-1)*140+110;
+}
+makeP();
+const ICON={s:'🚩',g:'💰',l:'💸',t:'🏛️',n:'📱',m:'⭐',G:'🏁',u:'❓',x:'🤝',k:'🔥',a:'🚔',h:'🏥',r:'💞',f:'🤝',v:'🛟',p:'💴'};
+const MCOL={pick:'#ffa94d',salary:'#ffd43b',career:'#ff922b',mid:'#74c0fc',fest:'#ff8787',intro:'#a5d8ff',marry:'#ffa8c9'},MICO={pick:'👔',salary:'💴',career:'🚀',mid:'🌅',fest:'🎉',intro:'✨',marry:'💍'};
+const COL={s:'#fff',g:'#7bd88f',l:'#ff8c8c',t:'#ff9f6b',n:'#c9a7ff',m:'#ffb347',G:'#fff',u:'#d0d0d0',x:'#ffa8c9',k:'#63e6be',a:'#ced4da',h:'#e8f58b',r:'#f9c6ff',f:'#99e9f2',v:'#ffe066',p:'#ffa94d'};
+const THEME=[['🌳','🌷','🏫','🌲'],['🏢','🏬','🗼','🚗'],['⛰️','🌊','🏖️','🌴'],['🏠','🎉','⛲','🌸']];
+const BAND=['#cfe8c4','#d6dde8','#f1e3bf','#e3d6f3'];
+const CH=['第1章 学生時代','第2章 社会人','第3章 円熟期','最終章 ゴールへ'];
+const stg=(r,R)=>{const t=R>1?r/(R-1):0;return t<.16?0:t<.5?1:t<.85?2:3};
+let MAPS={};
+const CLG={'バイト':'バイトを頑張った！','お年玉':'お年玉をもらった！','奨学金':'奨学金が振り込まれた！','臨時収入':'思わぬ臨時収入！','試験合格':'試験に合格した！','仕送り':'仕送りが届いた！','インターン':'インターンで報酬！','内定祝い':'内定祝いが届いた！','給与':'給料日だ！','期末手当':'期末手当が出た！','退職金積立':'退職金の積立が増えた！','部活手当':'部活手当が出た！','賞与':'ボーナスが出た！','夜勤手当':'夜勤手当が出た！','調剤手当':'調剤手当が出た！','運賃':'運賃が入った！','深夜手当':'深夜手当が出た！','日当':'日当が出た！','危険手当':'危険手当が出た！','売上':'売上が伸びた！','出資':'出資を受けた！','事業売却':'事業を売却した！','年俸':'年俸が入った！','スポンサー':'スポンサー料が入った！','優勝賞金':'優勝賞金を獲得！','原稿料':'原稿料が入った！','単行本印税':'単行本の印税が入った！','アニメ化':'アニメ化が決定！','配当':'配当金が入った！','売却益':'株の売却益が出た！','株主優待':'株主優待をもらった！','指名':'指名が入った！','シャンパン':'シャンパンが入った！','太客':'太客がついた！','ドンペリ':'ドンペリが入った！','同伴':'同伴で稼いだ！','投げ銭':'投げ銭が届いた！','企業案件':'企業案件が入った！','グッズ':'グッズが売れた！','転売益':'転売で儲けた！','せどり':'せどりで儲けた！','限定品':'限定品が高く売れた！'},CLL={'タバコ代':'タバコ代がかさんだ…','酒代':'酒代がかさんだ…','学費':'学費の支払い期限…','部活':'部活の合宿費…','旅行':'友達と旅行へ！','教科書':'教科書を買った。','外食':'つい外食してしまった','引越し':'引越し費用がかかった','スーツ代':'スーツを新調した。','資格試験':'資格試験を受けた。','家賃':'家賃の支払い日…','共済掛金':'共済掛金を納めた。','研修費':'研修費がかかった。','教材費':'教材を買いそろえた。','保護者対応':'保護者対応に追われた','資格更新':'資格を更新した。','腰痛ケア':'腰痛ケアに通った。','学会費':'学会費を払った。','薬局設備':'薬局設備を整えた。','燃料費':'燃料費がかかった。','修理代':'車の修理代がかかった','道具代':'道具を買い替えた。','現場移動':'現場の移動費がかかった','人件費':'人件費を払った。','設備投資':'設備投資をした。','接待費':'接待費がかかった。','遠征費':'遠征費がかかった。','ケガの治療':'ケガの治療を受けた。','トレーナー代':'トレーナー代を払った','アシ代':'アシスタント代を払った','画材':'画材を買い足した。','締切地獄':'締切地獄で外注した…','手数料':'取引手数料がかかった','損切り':'損切りをした…','情報料':'情報料を払った。','衣装代':'衣装代がかかった。','飲み代':'飲み代がかさんだ。','美容':'美容にお金をかけた。','ドレス代':'ドレスを新調した。','送迎代':'送迎代がかかった。','機材':'機材を買い足した。','ネタ切れ':'ネタ切れで企画費…','炎上対策':'炎上対策に追われた…','仕入れ':'商品を仕入れた。','送料':'送料がかさんだ。','在庫処分':'在庫を処分した…'};
+// マスに書く短い出来事（VP の同じ並びに対応）
+const VS={
+ h:{g:['ジムで汗を流す！','温泉でゆったり♨','健診で数値改善！','朝の散歩が習慣に','ぐっすり快眠！','マラソン完走！','野菜中心の食生活','整体でスッキリ'],b:['風邪で寝込んだ…','ストレスで胃痛…','ケガで通院に…','寝不足でぼんやり','足首をひねった…','高熱が出た…','腰を痛めた…','花粉症がつらい…']},
+ hs:{g:['体育祭で大活躍！','朝ジョギング開始','部活で足腰UP！','早寝早起き！','給食をモリモリ','水泳で自己ベスト！','公園で遊び回る','保健室で健康講座'],b:['夜更かしで居眠り','部活で足をひねる','徹夜で風邪…','お菓子をむさぼった','体育でケガ…','朝ごはん抜き…','運動不足で息切れ','インフルで休校…']},
+ r:{g:['友人と楽しい飲み会','実家で家族団らん','同窓会で旧友と再会','同僚とランチ！','趣味仲間と盛り上がる','引っ越しを手伝う','久々の電話で近況','お裾分けを交換'],b:['友人とケンカ…','連絡できず疎遠に','記念日を忘れた…','会話に入れず寂しい','待ち合わせに遅刻','陰口を聞いた…','貸した物が戻らない','SNSが炎上…']},
+ rs:{g:['友達とお弁当！','部活で一致団結！','文化祭で最高！','放課後ゲーセン！','勉強を教えて感謝','席替えで仲良し隣','修学旅行で恋バナ','先輩に憧れた'],b:['ささいなケンカ…','既読スルー…','告白して振られた…','クラス替えで離れ…','悪口が気になる…','発表で笑われた…','約束を忘れた…','いじりがつらい…']}};
+function assignEv(q,i){   // 健康・人間関係マスは「抽選」ではなく、そのマスごとに起こる出来事を固定する（シード固定）
+  if(q.ev||q.dis||q.soc||(q.t!=='h'&&q.t!=='r'))return;
+  const rg=mulberry32((SEED^Math.imul(i+1,2654435761))|0),key=q.t+(q.st?'s':'');q.i=i;
+  if(q.t==='h'&&rg()<(q.st?.2:.3)){q.dis=1;return}
+  if(q.t==='r'&&!q.st&&rg()<.2){q.soc=1;return}
+  const good=rg()<.5,k=Math.floor(rg()*8),P=VP[key][good?'g':'b'][k];
+  q.ev={s:VS[key][good?'g':'b'][k],t:P[0],d:P[1]}}
+const wrap7=t=>t.length<=7?[t]:[t.slice(0,Math.ceil(t.length/2)),t.slice(Math.ceil(t.length/2))];
+function evLines(q){
+  if(q.dis)return['体調を崩した…','【健康】','病気にかかる！'];
+  if(q.soc)return['交流の機会','【人間関係】','誰かと出会い','関係が動く'];
+  if(!q.ev)assignEv(q,q.i||1);
+  const e=q.ev,v=q.t==='r'?e.d*(.7+1.3*(q.i||0)/Math.max(1,N-1)):e.d;
+  return wrap7(e.s).concat(q.t==='r'?'人間関係値が':'健康値が',amtWord(Math.round(v)||e.d))}
+
+const wrapJ=t=>t.length<=9?[t]:[t.slice(0,Math.ceil(t.length/2)),t.slice(Math.ceil(t.length/2))];
+function lines(q){switch(q.t){
+  case 's':return['スタート'];case 'G':return['ゴール'];case 'u':return['？？？'];
+  case 'g':return wrapJ(CLG[q.n]||q.n+'が入った！').concat(`${fmt(q.a)}もらう。`);
+  case 'l':return wrapJ(CLL[q.n]||q.n+'を払う。').concat(`${fmt(q.a)}払う。`);
+  case 'p':return['給料日！','通過でも給料','ぴったり止まると','1.5倍（職業しだい）'];
+  case 't':return['税務署','【資産】','所持金の一部を','課税（職業差）'];
+  case 'h':case 'r':return evLines(q);
+  case 'f':return q.tx;
+  case 'k':return[q.n,'【実力】','修行で実力+1','費用3,000円'];
+  case 'a':return['摘発','【資産】','職業しだいで','罰金・勾留'];
+  case 'n':return['SNS','【資産】副収入','配信者は','バズor炎上'];
+  case 'x':return q.tx;case 'v':return q.tx;
+  default:return['⛔強制',q.n];
+}}
+function buildMap(){
+  const key=mapJob;
+  if(!MAPS[key])MAPS[key]=mapSvg();
+  $('map').innerHTML=MAPS[key];
+}
+function mapSvg(){
+  let s='<defs><clipPath id="cq"><rect x="-36" y="-25" width="72" height="50" rx="9"/></clipPath><clipPath id="ct"><circle r="9"/></clipPath></defs>';const R=Math.ceil(N/20),zr=Math.floor(CFG.pick/20);
+  for(let r=0;r<R;r++){const y0=90+r*140,g=stg(r,R);
+    s+=`<rect x="0" y="${y0-60}" width="1700" height="140" fill="${BAND[g]}"/>`+(slotOk(aurl('map','stage'+g))?`<image data-keep href="${aurl('map','stage'+g)}" x="0" y="${y0-60}" width="1700" height="140" preserveAspectRatio="xMidYMid slice" onload="imgOk(this)" onerror="imgNg(this)"/>`:'');
+    if(r===0||stg(r-1,R)!==g)s+=`<text x="14" y="${y0-44}" font-size="14" font-weight="700" fill="#555">${CH[g]}</text>`;
+    if(r===zr)s+=`<text x="${r%2?900:300}" y="${y0-44}" font-size="13" font-weight="700" fill="#c92a2a">▶ 就活・職業選択ゾーン（${CFG.pick}〜${CFG.sal}マス）</text>`;
+    for(let j=0;j<14;j++)s+=`<text x="${200+j*95+(j*29)%23}" y="${y0+78+(j*37)%14}" font-size="26">${THEME[g][(j*7+r)%4]}</text>`;
+  }
+  const d='M'+P.map(p=>p.join(',')).join(' L');
+  s+=`<path d="${d}" fill="none" stroke="#b08968" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="#e9d8a6" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>`;
+  SQ.forEach((q,i)=>{const [x,y]=P[i],m=q.t==='m',L=lines(q),w=m?124:72,hh=m?92:50;
+    if(m){const fc=MCOL[q.k]||COL.m;
+      s+=`<g><title>${i}: ${q.n}（ストップマス）</title><rect x="${x-w/2-6}" y="${y-hh/2-6}" width="${w+12}" height="${hh+12}" rx="16" fill="none" stroke="${fc}" stroke-width="3" stroke-dasharray="7 5" opacity=".9"/><rect x="${x-w/2}" y="${y-hh/2}" width="${w}" height="${hh}" rx="13" fill="${fc}" stroke="#c92a2a" stroke-width="5"/><rect x="${x-w/2}" y="${y-hh/2}" width="${w}" height="22" rx="13" fill="#c92a2a"/><rect x="${x-w/2}" y="${y-hh/2+10}" width="${w}" height="12" fill="#c92a2a"/><text x="${x}" y="${y-hh/2+16}" font-size="12" font-weight="800" text-anchor="middle" fill="#fff">⛔ ストップ</text>${svis('stops',q.k,x-22,y-24,44,44,`<text x="${x}" y="${y+4}" font-size="26" text-anchor="middle">${MICO[q.k]||'⭐'}</text>`)}<text x="${x}" y="${y+hh/2-12}" font-size="15" font-weight="800" text-anchor="middle" fill="#222">${q.n}</text><text x="${x-w/2+4}" y="${y-hh/2-9}" font-size="9" fill="#555">${i}</text></g>`;
+      return}
+    s+=`<g class="sq"><title>${i}: ${q.n}</title><rect x="${x-w/2}" y="${y-hh/2}" width="${w}" height="${hh}" rx="9" fill="${COL[q.t]}" stroke="#fff" stroke-width="3"/>`+(slotOk(aurl('squares',SQK(q.t)))?`<image data-keep href="${aurl('squares',SQK(q.t))}" transform="translate(${x},${y})" x="-36" y="-25" width="72" height="50" preserveAspectRatio="xMidYMid slice" clip-path="url(#cq)" onload="imgOk(this)" onerror="imgNg(this)"/>`:'');
+    const l4=L.length>3;L.forEach((t,j)=>{const fs=j?(l4?8:9):(l4?10:10.5),ew=[...t].reduce((a,c)=>a+(/[\x00-\x7f]/.test(c)?.55:1)*fs,0);s+=`<text x="${x}" y="${(y+(j-(L.length-1)/2)*(l4?10.5:11)+3).toFixed(1)}" font-size="${fs}"${ew>66?' textLength="66" lengthAdjust="spacingAndGlyphs"':''} font-weight="${j?400:700}" text-anchor="middle" fill="#222">${t}</text>`});
+    s+=`<text x="${x-w/2+3}" y="${y-hh/2-3}" font-size="8" fill="#555">${i}</text></g>`;
+  });
+  SHOPS.forEach(k=>{if(k+1>=N)return;const x=(P[k][0]+P[k+1][0])/2,y=(P[k][1]+P[k+1][1])/2+36;
+    s+=`<g class="shop"><title>${k}〜${k+1}マスの間：通り抜けショップ（止まらずに立ち寄れる）</title><circle cx="${x}" cy="${y}" r="13" fill="#fff" stroke="#e8590c" stroke-width="3"/><text x="${x}" y="${y+5}" font-size="14" text-anchor="middle">🛒</text>`+(slotOk(aurl('map','shop'))?`<image data-keep href="${aurl('map','shop')}" x="${x-13}" y="${y-13}" width="26" height="26" preserveAspectRatio="xMidYMid meet" onload="imgOk(this)" onerror="imgNg(this)"/>`:'')+`<text x="${x}" y="${y+25}" font-size="8" font-weight="700" text-anchor="middle" fill="#c2410c">ショップ</text></g>`});
+  return s+'<g id="tks"></g>';
+}
+// ===== ルーレット＆効果音 =====
+let AC=null,mute=false,TH=0,FLICK=null;
+function au(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume()}
+function beep(f,d,type,v,t0){if(!AC||mute)return;const t=AC.currentTime+(t0||0),o=AC.createOscillator(),g=AC.createGain();o.type=type||'square';o.frequency.value=f;g.gain.setValueAtTime(v||.07,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}
+function fanfare(n){[523,659,784,1047].slice(0,n).forEach((f,i)=>beep(f,.25,'triangle',.1,i*.11))}
+let WMAX=10;
+function buildWheel(m){
+  WMAX=m||10;const SG=360/WMAX;
+  const pt=(a,r)=>[(r*Math.sin(a*Math.PI/180)).toFixed(1),(-r*Math.cos(a*Math.PI/180)).toFixed(1)];
+  let s='<g id="bulbs">';
+  for(let i=0;i<24;i++){const [x,y]=pt(i*15,100);s+=`<circle class="bl" cx="${x}" cy="${y}" r="3.5"/>`}
+  s+='</g><circle r="96" fill="#333"/><g id="wh">';
+  for(let n=1;n<=WMAX;n++){const a=(n-1)*SG,[x0,y0]=pt(a-SG/2,92),[x1,y1]=pt(a+SG/2,92);
+    s+=`<path d="M0,0 L${x0},${y0} A92,92 0 0 1 ${x1},${y1} Z" fill="hsl(${a},65%,${n%2?48:58}%)" stroke="#fff" stroke-width="1.5"/><text transform="rotate(${a}) translate(0,-68)" text-anchor="middle" dominant-baseline="middle" font-size="${WMAX>10?16:19}" font-weight="700" fill="#fff">${n}</text>`}
+  s+='</g><circle r="24" fill="#fff" stroke="#333" stroke-width="3"/><text id="wn" y="2" text-anchor="middle" dominant-baseline="middle" font-size="22" font-weight="700" fill="#d9480f">GO</text><polygon points="-10,-110 10,-110 0,-84" fill="#d9480f" stroke="#fff" stroke-width="2"/>';
+  $('wsv').innerHTML=s;
+}
+function spinOnce(n,dur0,rot0,fl){return new Promise(res=>{
+  au();
+  const box=$('wbox'),from=TH,SG=360/WMAX;
+  const target=-(n-1)*SG+(Math.random()*SG*.6-SG*.3);
+  let total,dur;
+  if(fl){const dir=fl.dir<0?-1:1,pw=Math.max(0,Math.min(1,fl.pw));   // 強くはじくほど長く・たくさん回る（出目はあくまでランダム）
+    const delta=dir>0?((target-from)%360+360)%360:-(((from-target)%360+360)%360);
+    total=from+delta+dir*360*Math.round(pw*7);dur=1300+pw*4700+Math.random()*400}
+  else{const delta=((target-from)%360+360)%360;total=from+360*(rot0+Math.floor(Math.random()*3))+delta;dur=dur0+Math.random()*900}
+  const st=performance.now();
+  let last=Math.floor((from+SG/2)/SG);
+  box.classList.add('spin');$('wn').textContent='?';
+  beep(220,.5,'sawtooth',.05);
+  function f(now){
+    const p=Math.min(1,(now-st)/dur),e=1-Math.pow(1-p,4);
+    TH=from+(total-from)*e;
+    $('wh').setAttribute('transform',`rotate(${TH.toFixed(2)})`);
+    const k=Math.floor((TH+SG/2)/SG);
+    if(k!==last){last=k;beep(1300-700*p,.045,'square',.07)}
+    if(p>.7)box.classList.add('tense');
+    if(p<1)requestAnimationFrame(f);
+    else{box.classList.remove('spin','tense');$('wn').textContent=n;fanfare(n>=WMAX*.9?4:3);setTimeout(()=>res(n),700)}
+  }
+  requestAnimationFrame(f);
+})}
+const LONG=['運送ドライバー','建設作業員'];
+const rollMax=p=>p&&LONG.includes(p.job)?12:10;
+async function spin(){
+  const mx=rollMax(S);if(mx!==WMAX)buildWheel(mx);
+  let n=1+Math.floor(Math.random()*mx),dur=4300;
+  if(S.hard){S.hard=0;const c=[];for(let d=1;d<=mx;d++)if(isNeg(SQ[Math.min(N-1,S.pos+d)]))c.push(d);
+    if(c.length){n=c[Math.floor(Math.random()*c.length)];log('🌪 人生ハードモード発動… 出目がマイナスマスへ導かれる','crimson')}else log('🌪 人生ハードモード…のはずが、前方にマイナスマスがなく命拾いした')}
+  else if(S.pin){n=Math.min(mx,S.pin);S.pin=0;dur=2600;log('🧭 ピンポイントナビで出目が指定された')}
+  const fl=FLICK;FLICK=null;
+  await spinOnce(n,dur,6,fl);
+  if(S&&S.deb&&S.deb.alc&&Math.random()<.3){
+    let m;do{m=1+Math.floor(Math.random()*mx)}while(m===n);
+    log(`🍶 アル中の手が震えて、ルーレットが暴走！ 出目が${n}から${m}に変わった`,'crimson');
+    $('wbox').classList.add('shake');await sleep(400);$('wbox').classList.remove('shake');
+    return spinOnce(m,1800,3);
+  }
+  return n;
+}
+$('mute').onclick=()=>{mute=!mute;$('mute').textContent=mute?'🔇':'🔊'};
+buildWheel();
+// ===== 所持金ウィンドウ（紙幣）=====
+const DEN=[100000,50000,20000,10000,5000,1000];
+const BILLC={1000:['#d6e8f7','#6fa3d1','#1f4e79'],5000:['#e8dcf3','#a37fcb','#4a2c73'],10000:['#f4e5c9','#cda15a','#6b4510'],20000:['#d3efd5','#62b56d','#1e5a28'],50000:['#f9d5d5','#de7070','#7a1f1f'],100000:['#454555','#c9a227','#f2d36b']};
+function billSyms(){return DEN.map(d=>{const [a,b,c]=BILLC[d],lab=d.toLocaleString()+'円',dk=d===100000;
+ return `<symbol id="b${d}" viewBox="0 0 160 80"><rect x="1" y="1" width="158" height="78" rx="6" fill="${a}" stroke="${c}" stroke-width="2"/><rect x="6" y="6" width="148" height="68" rx="4" fill="none" stroke="${b}" stroke-width="1.5"/><path d="M12 66 q14 -10 28 0 t28 0 t28 0 t28 0 t28 0" fill="none" stroke="${b}" stroke-width="1.2" opacity=".7"/><circle cx="38" cy="36" r="22" fill="${b}" opacity="${dk?.9:.5}"/><circle cx="38" cy="36" r="17" fill="none" stroke="${dk?'#2a2a35':c}" stroke-width="1.5"/><text x="38" y="45" text-anchor="middle" font-size="26" font-weight="800" fill="${dk?'#2a2a35':c}" font-family="sans-serif">A</text><text x="107" y="23" text-anchor="middle" font-size="9" letter-spacing="1.5" fill="${c}" font-family="sans-serif">ANYONES NOTE</text><text x="107" y="50" text-anchor="middle" font-size="20" font-weight="800" fill="${c}" textLength="78" lengthAdjust="spacingAndGlyphs" font-family="sans-serif">${lab}</text><text x="107" y="68" text-anchor="middle" font-size="7" fill="${c}" font-family="sans-serif">GAME ONLY</text>${slotOk(aurl('bills',d))?`<image href="${aurl('bills',d)}" x="0" y="0" width="160" height="80" preserveAspectRatio="xMidYMid slice" onload="imgOk(this)" onerror="imgNg(this)"/>`:''}</symbol>`}).join('')}
+
+const NOTE_SYM=`<symbol id="bnote" viewBox="0 0 160 80"><rect x="1" y="1" width="158" height="78" rx="4" fill="#efe3c6" stroke="#8b1a1a" stroke-width="2.5"/><rect x="6" y="6" width="148" height="68" rx="3" fill="none" stroke="#b33" stroke-width="1.2" stroke-dasharray="5 3"/><text x="80" y="30" text-anchor="middle" font-size="19" font-weight="800" fill="#8b1a1a" letter-spacing="3" font-family="serif">約束手形</text><text x="80" y="52" text-anchor="middle" font-size="17" font-weight="800" fill="#c92a2a" font-family="sans-serif">-1,000円</text><text x="14" y="68" font-size="7" fill="#7a5a3a" font-family="sans-serif">上記の金額を支払うことを約束します</text><circle cx="136" cy="56" r="11" fill="none" stroke="#c92a2a" stroke-width="2"/><text x="136" y="61" text-anchor="middle" font-size="13" font-weight="800" fill="#c92a2a" font-family="serif">印</text>${slotOk(aurl('bills','note'))?`<image href="${aurl('bills','note')}" x="0" y="0" width="160" height="80" preserveAspectRatio="xMidYMid slice" onload="imgOk(this)" onerror="imgNg(this)"/>`:''}</symbol>`;
+$('wdefs').innerHTML='<defs>'+billSyms()+NOTE_SYM+'</defs>';
+const NOTE_V=1000; // 約束手形1枚＝-1,000円（p.w.n に枚数）
+const wSum=c=>DEN.reduce((a,d)=>a+d*(c[d]||0),0)-NOTE_V*(c.n||0);
+function wAdd(c,y){for(const d of DEN){const k=Math.floor(y/d);if(k){c[d]=(c[d]||0)+k;y-=k*d}}}
+function wPay(c,y){
+  for(const d of DEN){while(y>=d&&(c[d]||0)>0){c[d]--;y-=d}}
+  if(y>0){const up=[...DEN].reverse().find(d=>d>=y&&(c[d]||0)>0);
+    if(up){c[up]--;wAdd(c,up-y);y=0}
+    else{for(const d of DEN){while(y>0&&(c[d]||0)>0){c[d]--;y-=d}}if(y<0)wAdd(c,-y)}}
+}
+function syncW(p){const want=p.money*100;
+  if(want<0){DEN.forEach(d=>p.w[d]=0);p.w.n=Math.ceil(-want/NOTE_V);return}
+  if(p.w.n){p.w.n=0;DEN.forEach(d=>p.w[d]=0)}
+  const have=wSum(p.w);if(want>have)wAdd(p.w,want-have);else if(want<have)wPay(p.w,have-want)}
+let WSIG='',WSHOW=-1;
+let BUN={},CARRY=null,CNEW=null,XP=-1,MSG='',cg=null,GX=0,GY=0;
+const canX=()=>NET.on?!!PL[WI()]:(!busy&&S&&!S.cpu&&PL[cur]&&!PL[cur].cpu);
+const totW=p=>wSum(p.w)+(CARRY?wSum(CARRY):0);
+function exch(bun){const out={};wAdd(out,wSum(bun));return out}
+const sameC=(a,b)=>DEN.every(d=>(a[d]||0)===(b[d]||0));
+const fmtC=c=>DEN.filter(d=>c[d]).map(d=>d.toLocaleString()+'円×'+c[d]).join(' ＋ ');
+const miniStk=(d,n,vis0)=>{const vis=Math.min(n,vis0);let s='';for(let i=0;i<vis;i++)s+=`<svg class="bill" viewBox="0 0 160 80" style="top:${(vis-1-i)*7}px;z-index:${i}"><use href="#b${d}"/></svg>`;return `<div class="stk"><div class="stkb" style="height:${48+(vis-1)*7}px">${s}</div><b class="cnt">×${n}</b></div>`};
+const holding=()=>CARRY||wSum(BUN)>0;
+function overCounter(x,y){const el=document.elementFromPoint(x,y);return !!(el&&el.closest('#wcounter'))}
+function ghost(){
+  const h=CARRY||BUN;
+  if(!holding()){if(cg){cg.remove();cg=null}$('wcounter').classList.remove('over','bad');return}
+  if(!cg){cg=document.createElement('div');cg.id='cghost';document.body.appendChild(cg)}
+  const T=wSum(h);let pv='',bad=false;
+  const on=overCounter(GX,GY);
+  if(CARRY)pv='財布の中をクリックして受け取る';
+  else if(on){const o=exch(BUN);bad=sameC(o,BUN);pv=bad?'これ以上大きくできません':'クリックで両替 → '+fmtC(o)}
+  else pv='カウンターをクリックして両替';
+  cg.innerHTML=`<div class="gtot">${CARRY?'両替後 ':'束 計 '}${fmt(T/100)}</div>`+DEN.filter(d=>h[d]).map(d=>miniStk(d,h[d],5)).join('')+`<div class="gprev${bad?' bad':''}">${pv}</div>`;
+  cg.style.left=GX+'px';cg.style.top=GY+'px';
+  $('wcounter').classList.toggle('over',on&&!CARRY);$('wcounter').classList.toggle('bad',bad)}
+function drawWallet(anim,delta){
+  const p=PL[WI()];if(!p)return;
+  const sig=WI()+'|'+DEN.map(d=>p.w[d]||0).join(',')+'|n'+(p.w.n||0)+'|'+JSON.stringify(BUN)+(CARRY?'c':'')+(CNEW?'n':'')+MSG+canX();
+  if(!anim&&sig===WSIG)return;
+  const prev=(WSHOW===WI()&&p.wp)?p.wp:null;
+  $('wown').textContent=p.name;$('wtot').textContent=fmt(totW(p)/100);
+  $('wbills').innerHTML=DEN.map(d=>{const n=(p.w[d]||0)-(BUN[d]||0);if(n<=0)return '';
+    const vis=Math.min(n,8),old=prev?(prev[d]||0):n,cn=CNEW?(CNEW[d]||0):0;let s='';
+    for(let i=0;i<vis;i++){const isNew=(anim&&prev&&(n>old)&&i>=vis-Math.min(vis,n-old))||(cn&&i>=vis-Math.min(vis,cn));
+      s+=`<svg class="bill${isNew?' drop':''}" viewBox="0 0 160 80" style="top:${(vis-1-i)*7}px;z-index:${i}"><use href="#b${d}"/></svg>`}
+    return `<div class="stk" data-d="${d}"><div class="stkb" style="height:${48+(vis-1)*7}px">${s}</div><div class="stkf"><button class="all" data-all="${d}">全部</button><b class="cnt">×${n}</b></div></div>`}).join('');
+  const nn=p.w.n||0;
+  if(nn){const vis=Math.min(nn,8);let s='';for(let i=0;i<vis;i++)s+=`<svg class="bill note" viewBox="0 0 160 80" style="top:${(vis-1)*7-i*7}px;z-index:${i}"><use href="#bnote"/></svg>`;
+    $('wbills').innerHTML+=`<div class="stn"><div class="stkb" style="height:${48+(vis-1)*7}px">${s}</div><div class="stkf"><span class="ntl">約束手形</span><b class="cnt" style="color:#c92a2a">×${nn}</b></div></div>`}
+  $('wmsg').textContent=MSG||(nn?'お金が足りないので約束手形を発行中（1枚＝-1,000円）。収入があると自動で返済される':'')||(canX()?'お札をクリックするとカーソルに集まる。カウンターをクリックで両替':'');
+  $('wallet').classList.toggle('carry',!!CARRY);$('wallet').classList.toggle('hold',wSum(BUN)>0);
+  CNEW=null;
+  p.wp={};DEN.forEach(d=>p.wp[d]=p.w[d]||0);WSIG=sig;WSHOW=WI();ghost();
+  if(anim&&delta){const e=$('wdelta'),w=$('wallet');e.className='';w.className='card';void e.offsetWidth;
+    e.textContent=(delta>0?'+':'-')+fmt(Math.abs(delta)/100);e.className=delta>0?'up':'dn';w.classList.add(delta>0?'up':'dn');setTimeout(()=>{w.classList.remove('up','dn')},900)}
+}
+function wsay(t){MSG=t;WSIG='';drawWallet(false)}
+function walSend(){if(NET.on&&!NET.host){const p=PL[WI()];if(p)netSendHost({t:'act',a:'wal',w:p.w})}}
+function depositCarry(quiet){const p=PL[WI()];if(!CARRY||!p)return;
+  DEN.forEach(d=>{p.w[d]=(p.w[d]||0)+(CARRY[d]||0)});CNEW=quiet?null:CARRY;CARRY=null;
+  MSG=quiet?'':'受け取りました！';walSend();WSIG='';drawWallet(false);if(!quiet)beep(880,.08,'triangle',.07)}
+function settle(){const p=PL[WI()];if(CARRY)depositCarry(true);BUN={};MSG='';if(p&&wSum(p.w)!==p.money*100)syncW(p);WSIG='';drawWallet(false);walSend()}
+function tryExchange(){
+  const p=PL[WI()],o=exch(BUN);
+  if(sameC(o,BUN)){wsay('それでは大きいお札になりません。束ねる組み合わせを考えよう');beep(300,.15,'square',.05);return}
+  DEN.forEach(k=>{p.w[k]=(p.w[k]||0)-(BUN[k]||0)});
+  CARRY=o;BUN={};fanfare(3);wsay('両替完了！ 財布の中をクリックして受け取ろう');
+}
+function addBill(d,all){const p=PL[WI()],n=(p.w[d]||0)-(BUN[d]||0);if(n<=0)return;
+  BUN[d]=(BUN[d]||0)+(all?n:1);XP=WI();MSG='';beep(900-DEN.indexOf(d)*40,.05,'triangle',.06);WSIG='';drawWallet(false)}
+function initBank(){
+  $('wcounter').innerHTML='<svg viewBox="0 0 132 64"><path d="M6 30 L126 30 L116 58 Q115 62 110 62 L22 62 Q17 62 16 58 Z" fill="#8a5a2f" stroke="#5a3a1c" stroke-width="2.5"/><path d="M14 31 L118 31 L112 46 L20 46 Z" fill="#2d6a3f"/><rect x="26" y="34" width="80" height="9" rx="3" fill="#143d22"/><ellipse cx="34" cy="26" rx="10" ry="3.5" fill="#e6b422" stroke="#8a6b10"/><ellipse cx="34" cy="22" rx="10" ry="3.5" fill="#f2d36b" stroke="#8a6b10"/><ellipse cx="100" cy="26" rx="9" ry="3.2" fill="#e6b422" stroke="#8a6b10"/><text x="66" y="57" text-anchor="middle" font-size="15" font-weight="800" fill="#f2d36b" font-family="sans-serif" letter-spacing="2">両替</text></svg>';
+  const wl=$('wallet');
+  wl.addEventListener('pointerdown',e=>{
+    GX=e.clientX;GY=e.clientY;
+    if(CARRY){if(!e.target.closest('#wcounter')){e.preventDefault();depositCarry()}return}
+    if(!canX())return;
+    const all=e.target.closest('[data-all]'),k=e.target.closest('#wbills .stk');
+    if(all){addBill(+all.dataset.all,true);return}
+    if(k){addBill(+k.dataset.d,false);return}
+    if(wSum(BUN)){
+      if(e.target.closest('#wcounter')){tryExchange()}
+      else{BUN={};MSG='束をもとに戻しました';WSIG='';drawWallet(false)}
+    }
+  });
+  document.addEventListener('pointermove',e=>{GX=e.clientX;GY=e.clientY;if(cg)ghost()});
+}
+async function walletTick(anim){
+  let d=0;
+  PL.forEach((p,i)=>{const was=wSum(p.w);syncW(p);if(i===WI())d=wSum(p.w)-was;
+    const nn=p.w.n||0;
+    if(nn&&!p.hadN)log(`📝 ${p.name}は所持金が足りず、約束手形を発行した（${nn}枚＝-${fmt(nn*10)}）`,'crimson',1);
+    else if(!nn&&p.hadN)log(`✅ ${p.name}は約束手形を全て返済した`,'green',1);
+    p.hadN=nn>0});
+  drawWallet(anim,d);
+  if(anim&&d)await sleep(900);
+}
+initBank();
+function stateChips(p){
+  let h='';
+  if(p.deb.tar)h+=`<span class="chip bad" title="ヤニかす：出費・呼吸器の病気が増える">${ic('tar')} ヤニ</span>`;
+  if(p.deb.alc)h+=`<span class="chip bad" title="アル中：出費・肝臓の病気が増え、ルーレットが暴走することも">${ic('alc')} 酒</span>`;
+  if(p.married)h+=`<span class="chip mar">${ic('married')} 既婚者（${esc(p.married.nm)}）</span>`;
+  if(p.engTo!=null)h+=`<span class="chip mar">${ic('engaged')} 婚約中（${esc(PL[p.engTo].name)}）</span>`;
+  if(p.sick)h+=`<span class="chip sick">${ic('sick')} ${esc(p.sick.n)} 残り${p.sick.left}ターン（通院代 ${medC(p.sick.cost,p)?fmt(medC(p.sick.cost,p)):'免除'}／回）</span>`;
+  if(p.ins>0)h+=`<span class="chip ok">🛡 医療保険 あと${p.ins}ターン</span>`;
+  if(p.dbl)h+='<span class="chip ok">🎲 次の出目2倍</span>';
+  if(p.pin)h+=`<span class="chip ok">🧭 次の出目は${p.pin}</span>`;
+  if(p.lobby)h+='<span class="chip ok">📢 次の選挙は3票</span>';
+  if(p.role)h+=`<span class="chip ${ROLES[p.role].rg==='dict'?'bad':'ok'}" title="${esc(ROLES[p.role].d)}">${ROLES[p.role].e} ${ROLES[p.role].n}${p.role==='rev'&&!p.revUsed?'（革命の切り札あり）':''}</span>`;
+  if(p.job==='警察官'&&p.bust>0)h+=`<span class="chip ok">🚔 今期の摘発 ${p.bust%1?p.bust.toFixed(1):p.bust}件</span>`;
+  if(p.job==='税務官'&&p.taxAcc>0)h+=`<span class="chip ok">🧾 今期の徴税 ${fmt(p.taxAcc)}</span>`;
+  if(p.hard)h+='<span class="chip bad">🌪 次はマイナスマスへ</span>';
+  if(p.novote)h+='<span class="chip bad">🤐 次の選挙は投票不可</span>';
+  if(p.sabo||hasC(p,'sabo'))h+='<span class="chip bad">🛋 サボりマン：収入半額</span>';
+  if(!h)h='<span class="chip ok">良好</span>';
+  return h}
+const PREV={};
+const PV=(p,k)=>{const o=PREV[p.id+k];return o==null?null:o};
+function render(){
+  const A=aScores(),pl=PL[cur];updateSoc();
+  $('ord').innerHTML=PL.map((q,i)=>`<span class="${i===cur?'on':''}">${avHTML(q,'20px')} ${esc(q.name)}${q.cpu?'🤖':''}${q.done?'🏁':''}</span>`).join('');
+  $('pp').innerHTML=`<div class="pp" style="border-left-color:${pl.col}"><div class="pph pphf">${avHTML(pl,'64px')}<div>${esc(pl.name)}${pl.cpu?' 🤖':''}の番<small>${pl.job?jobIcon(pl.job)+' '+pl.job+(pl.job0&&pl.job0!==pl.job?'（元：'+pl.job0+'）':'')+(pl.role?' '+roleHTML(pl.role):'')+(J[pl.job].c===1?'（実力LV'+pl.skill.toFixed(1)+'）':''):'職業：未定（学生）'}</small></div></div>
+<div class="vr"><span>${ic('bond')} 人間関係値${dlt(pl,'b')}</span>${bar(pl.bond,'100%',PV(pl,'b'))}</div>
+<div class="vr"><span>${ic('hp')} 健康値${dlt(pl,'h')}</span>${bar(pl.hp,'100%',PV(pl,'h'))}</div>
+<div class="stt"><span class="stl">${ic('state')} 状態</span><span class="chips">${stateChips(pl)}</span></div>
+<div class="vr"><span>${ic('happy')} 幸福値</span>${bar(hap(pl,A[cur]),'100%',PV(pl,'f'))}</div>
+<div class="stt"><span class="stl">${ic('rel')} 関係性</span><span class="chips">${relChips(pl)}</span></div>
+<div class="vr"><span>${ic('pos')} 現在地</span><span>${pl.done?'ゴール済み':pl.jail?'🔒 拘留所 '+(pl.jail.pos+1)+' / 15 マス（元は'+pl.pos+'マス目）':pl.pos+' / '+(N-1)+' マス'}</span></div></div>`;
+  animBars($('pp'));PREV[pl.id+'b']=pl.bond;PREV[pl.id+'h']=pl.hp;PREV[pl.id+'f']=hap(pl,A[cur]);
+  {const jv=!!pl.jail;$('bw').style.display=jv?'none':'';$('jailv').style.display=jv?'flex':'none';if(jv)$('jailv').innerHTML=jailHTML()}
+  const order=PL.map((p,i)=>i).filter(i=>!PL[i].jail).sort((a,b)=>(a===cur)-(b===cur));
+  $('tks').innerHTML=TRAPS.filter(t=>P[t.i]).map(t=>{const [x,y]=P[t.i],k=TRK[t.k];return `<g class="trap" transform="translate(${x+24},${y-20})"><circle r="13" fill="#fff" stroke="${k.col}" stroke-width="3"/><text y="5" text-anchor="middle" font-size="15">${k.e}</text></g>`}).join('')+order.map(i=>{const p=PL[i],[x,y]=P[p.pos];return `<g transform="translate(${x+(i%4-1.5)*14},${y-38-Math.floor(i/4)*16})">${avSvg(p,9)}<circle r="9" fill="none" stroke="${i===cur?'#222':'#fff'}" stroke-width="2"/></g>`}).join('');
+  const [x,y]=P[PL[cur].pos],bw=$('bw');
+  bw.scrollLeft=x-bw.clientWidth/2;bw.scrollTop=y-bw.clientHeight/2;
+  if(!NET.on&&(CARRY||wSum(BUN))&&(XP!==cur||busy||S.cpu))settle();
+  renderCards();
+  drawWallet(false);
+  $('roll').textContent=`${PL[cur].cpu?'🤖':'🎲'} ${PL[cur].name}の番`+(PL[cur].cpu?'（CPU）':'：'+(PL[cur].jail?'🔒 拘留所：':'')+'👆 ルーレットをはじく');
+  if(NET.on)netRender();
+}
+const say=t=>{STORY=t;log('📖 '+t)};
+let HOSP='',NOTE='';
+const cl=v=>Math.max(0,Math.min(100,v));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let PD={};   // 今のターンの増減の合計（パネルに言葉で表示）
+const pdAdd=(p,k,d)=>{const o=PD[p.id]=PD[p.id]||{b:0,h:0};o[k]+=d};
+// 増減は数字ではなく言葉で表示（v＝ゲーム長で正規化した増減量）
+const amtWord=v=>{const a=Math.abs(v),w=a<3?'ちょっと':a<8?'':'とっても';return w+(v>0?'上がった':'下がった')};
+const dlt=(p,k)=>{const v=(PD[p.id]||{})[k]||0;return Math.abs(v)>=.5?` <b class="dl ${v>0?'up':'dn'}">${v>0?'▲':'▼'}${amtWord(v)}</b>`:''};
+const prog=p=>Math.max(0,Math.min(1,(p.pos||0)/Math.max(1,N-1)));
+const bondProg=p=>.7+1.3*prog(p);   // 人間関係値の1回の増減幅：序盤0.7倍→終盤2.0倍
+// 資産マスの金額の目安（円）：初任給 約8,000円 → 結婚マス付近 約24,000円（マスごとのばらつきで7,000〜30,000円台）→ ゴール付近 約150,000円（10万円超えが普通）
+function Mat(i,C){C=C||CFG;const sal=C.sal,m=C.marry,n=C.n;
+  if(i<=m)return 8000+16000*Math.max(0,(i-sal)/Math.max(1,m-sal));
+  return 24000+126000*Math.pow(Math.min(1,(i-m)/Math.max(1,n-1-m)),1.15)}
+const mp=p=>Math.max(1+prog(p),CFG&&p&&p.pos>CFG.sal?Mat(p.pos)/8000:1);   // お金の増減幅（通院・SNS・カード代など）：マスの金額の伸びに合わせて大きくなる
+function chg(dr,dh,p,passive){      // passive=true：毎ターンじわじわ効く分だけゲーム長で薄める（1回のイベント幅はゲーム長に依存しない）
+  p=p||S;const who=p===S?'':`${p.name}の`;if(passive){dr*=SC;dh*=SC}else dr*=bondProg(p);if(dr>0&&p.job==='教師')dr*=1.3;
+  if(dr){const o=p.bond;p.bond=cl(p.bond+dr);const d=Math.round(p.bond)-Math.round(o);if(d)pdAdd(p,'b',d);if(d)log(`💞 ${who}人間関係値が${amtWord(d)}`,d>0?'green':'crimson')}
+  if(dh){const o=p.hp;p.hp=cl(p.hp+dh);const d=Math.round(p.hp)-Math.round(o);if(d)pdAdd(p,'h',d);if(d)log(`❤️ ${who}健康値が${amtWord(d)}`,d>0?'green':'crimson');
+    if(p.hp<=0&&p===S){S.hp=20;S.skip=Math.max(S.skip,MEDJ.includes(S.job)?1:2);const c=Math.round(100*mp(S)/10)*10;S.money-=c;log(`🏥 倒れて入院！ 治療費-${fmt(c)}・${MEDJ.includes(S.job)?1:2}回休み（体力が戻った）`,'crimson');HOSP=` …そして限界を超えて倒れ、入院することに！（治療費${fmt(c)}・${MEDJ.includes(S.job)?1:2}回休み）`}}
+}
+function meet(){
+  const co=PL.filter(o=>o!==S&&!o.done&&!o.jail&&o.pos===S.pos);
+  if(!co.length||S.pos===N-1)return;
+  const nw=[];
+  co.forEach(o=>{
+    if(!relOf(S,o)){relMake(S,o,5);nw.push(o);log(`🤝 ${o.name}と知り合いになった！`,'green');chg(3,0);chg(3,0,o)}
+    else{const r=relOf(S,o);if(r.m)relAdd(S,o,2,true);else if(r.v<16&&Math.random()<.8)relAdd(S,o,1,true)}
+  });
+  if(nw.length)NOTE=` 🤝 同じマスに止まった${nw.map(o=>o.name).join('・')}と「知り合い」になった！`;
+}
+const GS={バイト:'コンビニのバイトに精を出した。店長に褒められて{a}をもらう。',お年玉:'親戚のおじさんからお年玉をもらった！ {a}ゲット。',奨学金:'奨学金の振り込みがあった。ありがたく{a}をいただく。',臨時収入:'タンスの奥から古い封筒が！ なんと{a}が入っていた。',試験合格:'難関の試験に合格！ お祝い金として{a}がもらえた。',仕送り:'実家から荷物と仕送りが届いた。{a}をもらう。',インターン:'インターンで頑張りが認められ、報酬として{a}をもらう。',内定祝い:'内定が決まった！ 家族がお祝いに{a}をくれた。'};
+const LS={タバコ代:'ついタバコに手が伸びる…。タバコ代・たばこ税で{a}が消えた。',酒代:'今夜も飲まずにいられない。酒代と奢りで{a}が消えた。',学費:'学費の支払い期限が来た…。{a}を納める。',部活:'部活の合宿費と道具代がかさんだ。{a}を支払う。',旅行:'友達と旅行へ！ 楽しかったけど{a}が消えた。',教科書:'必要な教科書を買いそろえた。{a}を支払う。',外食:'つい友達と外食で盛り上がった。{a}を払う。',引越し:'引越しで業者代や敷金がかかった。{a}を支払う。',スーツ代:'就活用のスーツを新調した。{a}を支払う。',資格試験:'資格試験の受験料と参考書で{a}がかかった。'};
+// 健康・人間関係イベント [文章, 人間関係, 健康, 費用]
+const HE=[[['ジムで汗を流して体が軽くなった！',0,8,10],['温泉旅行でゆっくり休養した。心も体も回復！',0,12,30],['健康診断で数値が改善！ 生活習慣を見直した。',0,6,0]],
+          [['風邪をひいて寝込んでしまった…',0,-8,10],['ストレスで胃がキリキリ。働きすぎかも…',0,-10,0],['ケガをして通院することに…',0,-12,30]]];
+const RE=[[['友人たちと楽しい飲み会！ 絆が深まった。',8,0,10],['実家に帰って家族団らん。心が温まった。',10,0,0],['同窓会で旧友と再会！ 話が尽きなかった。',8,0,20]],
+          [['ちょっとした行き違いで友人とケンカしてしまった…',-8,0,0],['忙しくて連絡を返せず、疎遠になってしまった…',-10,0,0],['大事な記念日をうっかり忘れて、怒られた…',-12,0,10]]];
+const RES=[[['クラスの友達とお弁当を囲んで盛り上がった！',6,0,0],['部活の仲間と全国大会を目指して一致団結！',9,0,0],['文化祭でクラスが一つになった！ 最高の思い出。',10,0,10],['放課後に友達とカラオケ！ 笑いが止まらない。',7,0,10],['修学旅行で夜更かし。恋バナで大盛り上がり！',8,-2,0],['勇気を出して告白…まさかのOK！',12,0,0]],
+ [['友達と些細なことでケンカして、気まずい…',-8,0,0],['グループLINEで既読スルー。距離ができてしまった…',-7,0,0],['勇気を出して告白したけど、振られてしまった…',-10,-2,0],['クラス替えで仲の良い友達と離ればなれに…',-8,0,0],['部活で先輩とそりが合わず、居心地が悪い…',-9,0,0]]];
+const HES=[[['体育祭で大活躍！ 体力がついた。',0,8,0],['毎朝のジョギングが習慣になった。',0,7,0],['部活で鍛えられて足腰が強くなった。',0,8,0]],
+ [['夜更かしして授業中に居眠り。体調がイマイチ…',0,-7,0],['部活の練習で足をひねってしまった…',0,-9,20],['テスト前の徹夜で風邪をひいた…',0,-8,10]]];
+function salary(){
+  const j=J[S.job],v=j.c===0?Math.round(200*j.s/10)*10:j.c===1?100:150+Math.floor(Math.random()*100);
+  const g=add(v);log(`💴 初任給（${S.job}）：+${fmt(g)}`+(j.c===1?'　まずは下積みから':''),'green');
+  say(`${S.job}として初めての給料日！ ${fmt(g)}が振り込まれた。家族にささやかなプレゼントを贈った。`+(j.c===1?'まずは下積みからのスタートだ。':''));
+  chg(3,0);
+}
+
+
+// ===== 国勢（社会トレンド・政治システム）=====
+let ROUND=1,TREND='normal',PRES=null,REGIME=null;   // REGIME: null／'dict'(独裁政権)／'anar'(無政府状態)
+   // ROUND=全員が一巡するごとに+1（ターン数）／PRES={cand,pol,since}
+const CRE=['漫画家','配信者'],CON=['警察官','税務官','看護師','薬剤師','教師'],NIT=['ホスト','キャバ嬢','転売ヤー'];
+const ELEC_EVERY=8;
+const TRD={
+ normal:{n:'平常',e:'📰',s:'大きな流行なし',d:'社会に目立った流行はありません。'},
+ creator:{n:'クリエイターバブル',e:'🎨',s:'漫画家・配信者の収入+25%／SNSマス2倍／炎上・打ち切りも増加',d:'漫画家・配信者が盛り上がる好景気。該当職の収入が+25%、SNSマスの収益が2倍になる。ただし炎上・打ち切り・規制のリスクも上昇する。'},
+ conserv:{n:'コンサバ・安定社会',e:'🏛',s:'病気・摘発・悪い出来事が減る／支出マス-15%',d:'警察官・税務官・医療職・教師が社会を支える安定の時代。病気の発生率が約4割減り、摘発や健康・人間関係のマイナスイベントも減る。支出マスも15%軽くなる。'},
+ night:{n:'夜の街・ハイリスク景気',e:'🌃',s:'ホスト・キャバ嬢・転売ヤーの収入+30%／摘発・税務調査が激増',d:'ホスト・キャバ嬢・転売ヤーが荒稼ぎする夜の景気。該当職の収入が+30%になるが、全員に摘発・税務調査が激増（摘発1.6倍・無関係の職にも発生）し、税率も上がる。'}};
+function evalTrend(){
+  const act=PL.filter(p=>p.job&&!p.done),n=act.length;if(!n)return 'normal';
+  const te=act.reduce((a,p)=>a+(p.earn||0),0);
+  const sh=g=>{const m=act.filter(p=>g.includes(p.job));return{c:m.length,js:m.length/n,es:te>0?m.reduce((a,p)=>a+(p.earn||0),0)/te:0}};
+  const c=sh(CRE),k=sh(CON),y=sh(NIT);
+  const sc={creator:c.c?Math.max(c.js,c.es):0,conserv:k.c?k.js:0,night:y.c?Math.max(y.es,y.js*.8):0};
+  let best='normal',bv=.4;for(const t of ['creator','conserv','night'])if(sc[t]>=bv){best=t;bv=sc[t]+1e-6}
+  return best}
+const polM=(k,d)=>PRES&&PRES.pol[k]!==undefined?PRES.pol[k]:(d===undefined?1:d);
+// ===== 職業ごとの体質・特性 =====
+// sm＝喫煙しやすさ／al＝飲酒しやすさ（ヤニかす・アル中の発生率倍率）／nt＝夜の街トレンドでの収入ボーナス
+// cf＝徹夜体質（健康が削れやすいがSNSバズが大きい）／gl＝ガラスのメンタル（炎上ダメージ増・大当たりも巨大）
+// rk＝摘発（警察・税務署）倍率／cl＝クリーン（逮捕リスクほぼゼロ）
+const TR={ホスト:{sm:1.8,al:2,rk:1.25,nt:1.15},キャバ嬢:{sm:1.8,al:2,rk:1.15,nt:1.15},経営者:{sm:1.1,al:1.6,nt:1.1},建設作業員:{sm:1.8,al:1.3},運送ドライバー:{sm:1.6},
+ 漫画家:{sm:1.2,cf:1,gl:1},配信者:{sm:1.2,al:1.2,cf:1,gl:1},転売ヤー:{sm:1.2,gl:1,rk:1.25},警察官:{sm:.9,cl:1},税務官:{sm:.8,cl:1},看護師:{sm:.6,al:.8,cl:1},教師:{sm:.8,cl:1},薬剤師:{sm:.6,cl:1},プロスポーツ選手:{sm:.3,al:.6},投資家:{al:1.2}};
+const trOf=job=>TR[job]||{};
+function traitChips(job){const t=trOf(job),a=[];
+  if(t.sm>=1.5)a.push('🚬喫煙しやすい');else if(t.sm&&t.sm<=.6)a.push('🚭タバコに強い');
+  if(t.al>=1.5)a.push('🍶酒に溺れやすい（夜の街で収入UP）');else if(t.nt)a.push('🌃夜の街で収入UP');
+  if(t.cf)a.push('☕徹夜体質（体力が減りやすい／バズ大）');
+  if(t.gl)a.push('💔ガラスのメンタル（炎上2倍／大当たり巨大）');
+  if(t.rk)a.push('⚠摘発に狙われやすい');
+  if(t.cl)a.push('✅クリーン（逮捕リスクほぼ0）');
+  return a}
+function incMulFor(job){let m=1;
+  if(job==='警察官')m*=offMul(pStr());
+  if(job==='税務官')m*=offMul(tStr());
+  if(REGIME==='dict'&&CIV.includes(job))m*=1.25;
+  if(TREND==='night'&&trOf(job).nt)m*=trOf(job).nt;
+  if(TREND==='creator'&&CRE.includes(job))m*=1.25;
+  if(TREND==='night'&&NIT.includes(job))m*=1.3;
+  if(PRES){const P=PRES.pol;m*=P.inc||1;if(P.incJ&&P.incJ[job])m*=P.incJ[job]}
+  return m}
+const medC=(c,p)=>{const m=polM('medM');return m===0?0:Math.max(10,Math.round(c*m*(p?mp(p):1)/10)*10)};
+const lossM=()=>polM('lossM')*(TREND==='conserv'?.85:1);
+const taxMul=()=>REGIME==='anar'?0:polM('taxM')*(TREND==='night'?1.5:1)*(REGIME==='dict'?1.5:1);
+const pStr=()=>REGIME==='anar'?0:polM('gp')*(TREND==='night'?1.6:TREND==='conserv'?.5:1)*(REGIME==='dict'?1.8:1);   // 警察署の厳格度（1.0＝標準）。摘発率に掛かる
+const tStr=()=>taxMul();                                                  // 税務署の厳格度（1.0＝標準）。課税率に掛かる
+const govLv=(v,t)=>{let l=1;for(const x of t)if(v>=x)l++;return l};
+const pLv=()=>govLv(pStr(),[.6,.9,1.25,1.7]),tLv=()=>govLv(tStr(),[.75,.95,1.25,1.7]);
+const LVN=['ゆるい','ややゆるい','ふつう','きびしい','とてもきびしい'];
+const offMul=v=>Math.max(.75,Math.min(1.6,Math.pow(v,.6)));
+const sickMul=()=>polM('sickM')*(TREND==='conserv'?.6:1);
+function arrestP(base,job){if(REGIME==='anar')return 0;let p=base*(trOf(job).rk||1);
+  if(!p&&TREND==='night')p=.12;
+  p*=pStr();if(trOf(job).cl)p=Math.min(p,.01);return Math.min(.9,p)}
+// 政治思想（候補者）と政策
+const IDEO={
+ farright:{n:'極右',e:'🦅',col:'#7b1e1e',m:'「治安第一・国境を守れ」',pol:{gp:1.6,fineM:1.5,bondTurn:-.06,incJ:{漫画家:.9,配信者:.9}},pros:['警察署の厳格度が最大：警察官の収入UP'],cons:['摘発の発生率1.6倍・罰金1.5倍','分断が進み人間関係値が毎ターン低下','漫画家・配信者の収入-10%（表現規制）']},
+ cright:{n:'中道右派',e:'🏢',col:'#1c5fa8',m:'「減税と自己責任」',pol:{taxM:.7,medM:1.4,gp:1.15,fineM:1.15},pros:['税務署の課税率が3割減る'],cons:['医療費アップ：通院代が1.4倍']},
+ liberal:{n:'リベラル／革新',e:'🕊',col:'#0ca678',m:'「自由と多様性のある社会へ」',pol:{bondTurn:.06,incJ:{漫画家:1.12,配信者:1.12},gp:.7,fineM:.8},pros:['人間関係値が毎ターン上昇','漫画家・配信者の収入+12%','警察署がゆるい：摘発の発生率3割減・罰金2割減'],cons:['警察官の収入が下がる']},
+ farleft:{n:'極左',e:'⚒',col:'#c2255c',m:'「重税と福祉の充実」',pol:{taxM:1.8,medM:0,ubi:10,incJ:{経営者:.85,投資家:.85,転売ヤー:.85,ホスト:.85,キャバ嬢:.85}},pros:['医療費無料：通院代が免除','毎ターン1,000円の給付金'],cons:['税務署の課税率が1.8倍','経営者・投資家・夜職・転売ヤーの収入-15%']},
+ neolib:{n:'新自由主義',e:'📈',col:'#e8590c',m:'「規制緩和と競争で経済成長」',pol:{inc:1.1,taxM:.8,medM:1.3,bondTurn:-.04,gp:.9},pros:['社会全体の収入+10%','税務署の課税率が2割減'],cons:['通院代が1.3倍','競争社会で人間関係値がじわじわ低下']},
+ welfare:{n:'福祉重視',e:'🏥',col:'#d6336c',m:'「手厚い医療と年金で安心を」',pol:{medM:.5,agingM:.7,taxM:1.3,inc:.95},pros:['通院代が半額','健康値の自然減少が3割ゆるやか'],cons:['税務署の課税率が1.3倍','社会全体の収入-5%']},
+ populist:{n:'ポピュリズム',e:'📣',col:'#f08c00',m:'「国民にお金を配ります！」',pol:{ubi:10,lossM:1.25,gp:1.1},pros:['毎ターン1,000円のばらまき'],cons:['物価高：支出マスの金額が1.25倍']},
+ techno:{n:'テクノクラート',e:'🧠',col:'#495057',m:'「データに基づく合理的な政策」',pol:{sickM:.8,gp:.8,fineM:.9,inc:1.04,lossM:1.1},pros:['病気・摘発の発生率が2割減','社会全体の収入+4%'],cons:['実験的政策の副作用：支出マスが1.1倍']}};
+const CNAMES=['鷹森 剛','白石 みどり','黒川 誠','青井 さくら','赤城 烈','緑川 恵','金子 大地','神楽坂 凛','大和田 勇','桜庭 玲','氷室 冴','朝比奈 譲','久遠 ひかり','榊原 義男'];
+function mkCands(){
+  const ks=shuf(Object.keys(IDEO),Math.random).slice(0,2);          // 異なる思想同士を保証（同じキーは2つ選ばれない）
+  const nm=shuf(CNAMES.slice(),Math.random);
+  return ks.map((k,i)=>({k,name:nm[i],...IDEO[k]}));}
+function polUtil(job,P){
+  let u=((P.inc||1)*((P.incJ&&P.incJ[job])||1)-1)*8;
+  u+=(1-(P.taxM||1))*2+(1-(P.medM===undefined?1:P.medM))*1.2+(1-(P.lossM||1))*2.5+(P.bondTurn||0)*6+(P.ubi||0)*.12+(1-(P.sickM||1))*1.5+(1-(P.agingM||1))*2;
+  if(job&&(J[job]||{}).arrest)u+=(1-(P.gp||1))*3;
+  return u+Math.random()*.7}
+const effText=P=>IDEO_TXT(P);
+function IDEO_TXT(c){return `<ul>${c.pros.map(t=>`<li class="pro">${t}</li>`).join('')}${c.cons.map(t=>`<li class="con">${t}</li>`).join('')}</ul>`}
+function candHTML(c,extra){
+  const fb=`<span class="avf" style="background:${c.col}">${c.e}</span>`;
+  return `<div class="cand${extra&&extra.win?' win':''}" data-k="${c.k}"><div class="ch">${vis('candidates',c.k,fb,'av cd')}<div><div class="cn">${esc(c.name)}</div><span class="ci" style="background:${c.col}">${c.n}</span></div></div><div class="cm">${c.m}</div>${IDEO_TXT(c)}${(extra&&extra.html)||''}</div>`}
+function toast(t){const e=$('toast');if(!e)return;e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>{e.style.display='none'},3600)}
+function updateSoc(){
+  const e=$('soc');if(!e)return;const T=TRD[TREND];
+  const next=ELEC_EVERY-(ROUND%ELEC_EVERY);
+  const trend=`<span class="sc t-${TREND}" title="${esc(T.d)}">${vis('society',TREND,T.e,'ico')} <b>トレンド：${T.n}</b><small>${T.s}</small></span>`;
+  const rgb=REGIME?`<span class="sc regb rg-${REGIME}" title="${esc(RGN[REGIME].d)}">${RGN[REGIME].e} ${RGN[REGIME].n}<small>${RGN[REGIME].s}</small></span>`:'';
+  try{document.body.classList.toggle('rg-dict',REGIME==='dict');document.body.classList.toggle('rg-anar',REGIME==='anar')}catch(_){}
+  const pres=`<span class="sc pres" title="${PRES?esc(PRES.cand.name+'（'+PRES.cand.n+'）'+'\n'+PRES.cand.pros.concat(PRES.cand.cons).join('\n')):'まだ大統領はいません。'+ELEC_EVERY+'ターン目に最初の選挙があります'}">${vis('society','president','🏛','ico')} <b>${REGIME==='dict'?'独裁者':REGIME==='anar'?'前大統領（失脚）':'大統領'}：${PRES?esc(PRES.cand.name)+'（'+PRES.cand.n+'）'+(PRES.streak>1?' '+PRES.streak+'期目':''):'未選出'}</b><small>${PRES?PRES.cand.pros[0]+'／'+PRES.cand.cons[0]:'標準ルール'}</small></span>`;
+  // 画面上部は「政府（大統領・警察署・税務署）」と「社会（トレンド）」の2カテゴリーを枠で囲んで表示
+  e.innerHTML=`<div class="grp gv"><span class="gl">🏛 政府</span>${rgb}${pres}${govHTML()}</div>`+
+   `<div class="grp so"><span class="gl">🌐 社会</span>${trend}</div>`+
+   `<span class="sc rd">🗓 ${ROUND}ターン目・選挙まであと${next}ターン</span>`}
+function govHTML(){
+  if(REGIME==='anar')return `<span class="sc gov" title="無政府状態：警察署は機能停止。摘発も罰金もない代わりに、毎ターン暴動と略奪が起きる">🚔 <b>警察署</b> <span class="gm l1">□□□□□</span> 機能停止</span><span class="sc gov" title="無政府状態：税務署は機能停止。税金は取られない">🧾 <b>税務署</b> <span class="gm l1">□□□□□</span> 機能停止</span>`;
+  const pl=pLv(),tl=tLv(),m=n=>'■'.repeat(n)+'□'.repeat(5-n);
+  const pt=`警察署（治安・摘発）：摘発率が標準の×${pStr().toFixed(2)}／罰金×${(polM('fineM')).toFixed(2)}\n警察官の収入倍率 ×${offMul(pStr()).toFixed(2)}\n政治方針と社会トレンドで変わります`;
+  const tt=`税務署（徴税）：課税率が標準の×${tStr().toFixed(2)}／税務調査の頻度も連動\n税務官の収入倍率 ×${offMul(tStr()).toFixed(2)}\n政治方針と社会トレンドで変わります`;
+  return `<span class="sc gov" title="${esc(pt)}">🚔 <b>警察署</b> <span class="gm l${pl}">${m(pl)}</span> ${LVN[pl-1]}<small>摘発率×${pStr().toFixed(1)}</small></span>`+
+         `<span class="sc gov" title="${esc(tt)}">🧾 <b>税務署</b> <span class="gm l${tl}">${m(tl)}</span> ${LVN[tl-1]}<small>課税率×${tStr().toFixed(1)}</small></span>`}
+// 選挙UI
+function humanVote(p,A,B,i,tot){return new Promise(res=>{
+  $('elect').textContent=`🗳 第${Math.floor(ROUND/ELEC_EVERY)}回 大統領選挙（${ROUND}ターン目）`;
+  $('elecx').innerHTML=`<b>${esc(p.name)}</b> さんの投票（${i+1}/${tot}）。2人の候補者の政策を比べて、1票を投じてください。${PRES?`<br>現職：${esc(PRES.cand.name)}（${PRES.cand.n}）の政策は、この選挙の結果で置き換わります。`:''}`;
+  $('eleccs').innerHTML=[A,B].map((c,j)=>candHTML(c,{html:`<button data-v="${j}" style="background:${c.col}">この候補に投票する</button>`})).join('');
+  $('elecf').innerHTML='';$('elec').classList.add('on');
+  $('eleccs').onclick=e=>{const b=e.target.closest('button[data-v]');if(!b)return;$('eleccs').onclick=null;$('elec').classList.remove('on');beep(700,.08,'triangle',.07);res(+b.dataset.v)};
+})}
+function showElecResult(A,B,v,win,tie,W){return new Promise(res=>{
+  W=W||v.map(()=>1);const n=[0,0];v.forEach((x,i)=>{if(x>=0)n[x]+=W[i]});const tot=n[0]+n[1];
+  $('elect').textContent=`🏛 開票結果：${esc(win.name)}（${win.n}）が当選！`;
+  $('elecx').innerHTML=tie?'同票のため抽選で決まりました。':`${tot}票中 ${Math.max(...n)}票を獲得。`;
+  $('eleccs').innerHTML=[A,B].map((c,j)=>candHTML(c,{win:c===win,html:`<div><b>${n[j]}票</b>：${PL.map((p,i)=>v[i]===j?esc(p.name)+(W[i]>1?'（×'+W[i]+'）':''):'').filter(Boolean).join('、')||'なし'}</div><div class="cbar"><i style="width:${tot?n[j]/tot*100:0}%;background:${c.col}"></i></div>`})).join('');
+  $('elecf').innerHTML=(PRES&&PRES.streak>1?`<div class="note" style="margin:0 0 8px;color:#c92a2a"><b>⚠ ${PRES.streak}期連続当選！</b> 権力が一人に集中すると、独裁や無政府状態に陥るリスクが${Math.round(extremeP()*100)}%あります。</div>`:'')+`<div class="note" style="margin:0 0 8px">この政策は、次の選挙（${ELEC_EVERY}ターン後）まで社会全体のルールとして適用されます。</div><button id="elecok">政治が動き出す</button>`;
+  $('elec').classList.add('on');
+  $('elecok').onclick=()=>{$('elec').classList.remove('on');res()};
+})}
+async function election(){
+  let [A,B]=mkCands();const inc=PRES&&PRES.cand;
+  if(inc){const oth=[A,B].find(c=>c.k!==inc.k)||A;[A,B]=Math.random()<.5?[inc,oth]:[oth,inc]}
+  const v=[],W=PL.map(p=>p.novote?0:(p.lobby?3:1));
+  log(`🗳 ${ROUND}ターン目：大統領選挙！ ${A.name}（${A.n}）vs ${B.name}（${B.n}）`,'#7048e8',1);
+  for(let i=0;i<PL.length;i++){const p=PL[i];
+    if(!W[i]){v.push(-1);log(`🤐 ${p.name}はノンポリ宣言のため投票できない`,'#7048e8',1)}
+    else if(p.cpu){const ua=polUtil(p.job,A.pol)+(A===inc?.7:0),ub=polUtil(p.job,B.pol)+(B===inc?.7:0);v.push(ua>=ub?0:1)}
+    else v.push(await humanVote(p,A,B,i,PL.length))}
+  const n=[0,0];v.forEach((x,i)=>{if(x>=0)n[x]+=W[i]});
+  if(PL.some((p,i)=>W[i]===3))log('📢 ロビー活動で3票分を投じた人がいる！','#7048e8',1);
+  let tie=n[0]===n[1],wi=tie?(Math.random()<.5?0:1):(n[0]>n[1]?0:1);const win=[A,B][wi];
+  const streak=(PRES&&PRES.cand===win)?(PRES.streak||1)+1:1;
+  PRES={cand:win,pol:win.pol,since:ROUND,streak};
+  log(`🏛 ${win.name}（${win.n}）が当選！（${n[wi]}票${tie?'・同票のため抽選':''}）`,'#7048e8',1);
+  if(humans()>0)await showElecResult(A,B,v,win,tie,W);
+  PL.forEach(p=>{p.lobby=0;p.novote=0});
+  updateSoc();await extremeCheck()}
+
+// ===== 極限状態：独裁政権／無政府状態 =====
+const RGN={
+ dict:{n:'独裁政権',e:'🏴',s:'警察・税務が強権化／職業は「人間」に（警察官・税務官のみ特権）',d:'独裁政権：選挙は停止。警察署・税務署が極端に強権化し、一般の人は全員「人間」になる。警察官・税務官だけが職業を保つ。ショップの闇市には害カードが並ぶ。ストップマスでは🐕国家の犬／💣革命家を選ぶ。'},
+ anar:{n:'無政府状態',e:'🔥',s:'警察・税務は停止／毎ターン暴動と略奪／全員「人間」',d:'無政府状態：政府は機能停止。税金も罰金もないが、毎ターン暴動や略奪が起きる。全員が「人間」になり、ショップの闇市には害カードが並ぶ。ストップマスでは🌾農民／🪓略奪者を選ぶ。'}};
+const ROLES={
+ dog:{rg:'dict',e:'🐕',n:'国家の犬',d:'体制に尻尾を振る。摘発は約85%、徴税は約70%カットされ、臨時マスも無効。'},
+ rev:{rg:'dict',e:'💣',n:'革命家',d:'弾圧を受けやすい（摘発1.8倍・徴税1.5倍）。ただし次のストップマスで、一度だけ政権を崩壊させる革命に挑める。'},
+ farm:{rg:'anar',e:'🌾',n:'農民',d:'暴動・略奪の被害が大きく減り、毎ターン少しずつ資産と健康が回復する。'},
+ loot:{rg:'anar',e:'🪓',n:'略奪者',d:'毎ターン、他のプレイヤーからお金（ときにカード）を強奪する。人間関係は悪化する。'}};
+const roleHTML=k=>{const R=ROLES[k];return vis('jobs','role_'+k,R.e,'ji')+' '+R.n};
+// 独裁政権での摘発(a)・徴税(t)の倍率
+function crackM(p,kind){if(REGIME!=='dict')return 1;const r=p.role;return r==='dog'?(kind==='a'?.15:.3):r==='rev'?(kind==='a'?1.8:1.5):1}
+const regJob=p=>{const real=p.job0||p.job;return (REGIME==='dict'&&CIV.includes(real))?real:'人間'};
+function setRegime(rg){
+  REGIME=rg;
+  PL.forEach(p=>{p.role=null;
+    if(rg){if(p.job&&p.job!=='人間'&&!p.job0)p.job0=p.job;if(p.job){p.job=regJob(p)}}
+    else{if(p.job==='人間'||p.job0){p.job=p.job0||JL()[Math.floor(Math.random()*JL().length)];p.job0=undefined}}});
+  if(rg==='anar')TRAPS=[];
+  mapJob='';setMap(S.job);updateSoc()}
+function extremeP(){const k=PRES&&PRES.streak||1;return k>=4?.75:k===3?.5:k===2?.25:0}
+async function extremeCheck(){
+  const pr=extremeP();if(!pr||REGIME)return;
+  log(`⚠ ${PRES.cand.name}が${PRES.streak}期連続当選。独裁化・無政府化のリスク${Math.round(pr*100)}%`,'#c92a2a',1);
+  if(Math.random()>=pr)return;
+  const avgB=PL.reduce((a,p)=>a+p.bond,0)/PL.length,an=Math.random()<(avgB<35?.5:.25);
+  await enterRegime(an?'anar':'dict',an?`${PRES.cand.name}への権力集中と社会の分断で、国家が機能不全に陥った`:`${PRES.cand.name}が非常事態を宣言し、権力を独占した`)}
+async function enterRegime(rg,why){
+  setRegime(rg);const R=RGN[rg];
+  log(`${R.e} 【${R.n}】突入！ ${why}`,'#212529',1);
+  toast(`${R.e} ${R.n}に突入！　${R.s}`);
+  const h=PL.find(p=>!p.cpu&&!p.done);
+  if(h)await ask(`${R.e} ${R.n}に突入`,`${why}。\n\n${R.d}\n\n・マップは白黒になり、全員の職業が「人間」になります（${rg==='dict'?'警察官・税務官のみ職業を維持':'警察官・税務官も例外なし'}）。\n・原則としてゲーム終了までこの状態が続きます。\n・通り抜けショップのカードは3枚とも中身が丸見えで、害カードが極めて高確率で並びます。`,['…受け入れるしかない'],h);
+  render()}
+// 極限状態での毎ターンの出来事（手番開始時）。戻り値 true＝お金が動いた
+function regimeTick(p){
+  if(!REGIME||p.done)return false;let hit=false;
+  if(REGIME==='dict'){
+    if(CIV.includes(p.job)||p.role==='dog'){if(p.role==='dog')TURNN+='体制の犬として今日も守られている。';return false}
+    if(Math.random()<Math.min(.7,.28*crackM(p,'a'))){
+      const x=lp(p.money,rs(Math.min(.5,.05*polM('fineM')*crackM(p,'a'))));p.money-=x;chg(-2,-2,p);hit=true;
+      log(`🏴 独裁政権の弾圧：不当な罰金${x>0?'-'+fmt(x):''}・人間関係と健康が低下`,'crimson');TURNN+=`秘密警察に目をつけられ、不当な取り立てに遭った${x>0?'（'+fmt(x)+'）':''}。`}
+  }else{
+    const k=p.role==='farm'?.4:1,x=lp(p.money,rs(.05*k));p.money-=x;chg(0,-2*k,p,true);hit=hit||x>0;
+    log(`🔥 暴動に巻き込まれた${x>0?' -'+fmt(x):''}${k<1?'（農民なので被害は小さい）':''}`,'crimson');TURNN+=`街で暴動が発生！ ${x>0?fmt(x)+'を失った。':'幸い、持ち出すものがなかった。'}`;
+    if(p.role==='farm'){const g=Math.max(10,Math.round(10*mp(p)/10)*10);p.money+=g;chg(0,2,p,true);hit=true;log(`🌾 畑の収穫 +${fmt(g)}・体力回復`,'green');TURNN+=`畑の収穫で${fmt(g)}を得て、体も回復した。`}
+    if(p.role==='loot'){
+      const O=PL.filter(o=>o!==p&&!o.done&&!o.jail);
+      if(O.length){const t=O[Math.floor(Math.random()*O.length)],tk=t.role==='farm'?.5:1,y=lp(t.money,rs(.1*tk));
+        if(y>0){t.money-=y;p.money+=y;log(`🪓 ${p.name}が${t.name}から${fmt(y)}を強奪！`,'crimson');TURNN+=`${t.name}を襲って${fmt(y)}を強奪した。`;hit=true}
+        if(t.cards&&t.cards.length&&p.cards.length<HANDMAX&&Math.random()<.4){const ci=Math.floor(Math.random()*t.cards.length),c=t.cards.splice(ci,1)[0];p.cards.push({id:c.id,left:CLIFE});log(`🪓 ${p.name}が${t.name}のカードを奪った！`,'crimson');TURNN+='カードも一枚奪った。'}
+        chg(-1.5,0,p);chg(-3,-1,t);
+        if(!p.cpu||!t.cpu)toast(`🪓 ${p.name}が${t.name}を略奪！`)}}}
+  return hit}
+// 極限状態のストップマス：専用ロールの選択（革命家は一度だけ革命に挑戦できる）
+async function roleFlow(p,i){
+  if(!REGIME||p.done)return;
+  if(REGIME==='dict'&&CIV.includes(p.job)){log('🏴 特権階級（'+p.job+'）はロールを選ぶ必要がない');return}
+  if(REGIME==='dict'&&p.role==='rev'&&!p.revUsed){
+    const sp=Math.min(.85,.4+PL.filter(o=>o!==p&&o.role==='rev').length*.12+(PL.reduce((a,o)=>a+o.bond,0)/PL.length<40?.1:0));
+    let r;
+    if(p.cpu)r=Math.random()<.6?0:2;
+    else r=await ask('💣 革命の好機！',`独裁政権を倒せる唯一のチャンスです（一度きり）。\n成功率：約${Math.round(sp*100)}%\n成功→政権崩壊、元の職業と選挙が復活し、あなたは英雄に。\n失敗→逮捕・拘留所行き＆罰金、ロールを失う。`,[`💥 革命を決行する（成功率${Math.round(sp*100)}%）`,'🔄 ロールを選び直す','今は耐える'],p);
+    if(r===0){await revolution(p,sp);return}
+    if(r===2||r<0)return}
+  const ks=Object.keys(ROLES).filter(k=>ROLES[k].rg===REGIME);let r;
+  if(p.cpu){const avg=PL.reduce((a,o)=>a+o.money,0)/PL.length;r=REGIME==='dict'?(Math.random()<(p.money>=avg?.7:.45)?0:1):(Math.random()<.45?1:0)}
+  else r=await ask(`${RGN[REGIME].e} ${RGN[REGIME].n}で生きる道を選ぶ`,'人生の転機。この世界で、あなたはどう生きますか？（次のストップマスで選び直せます）',ks.map(k=>`${ROLES[k].e} ${ROLES[k].n}：${ROLES[k].d}`),p);
+  if(!(r>=0&&r<ks.length))r=0;
+  p.role=ks[r];log(`${ROLES[p.role].e} ${p.name}は【${ROLES[p.role].n}】として生きることを選んだ`,'#212529');
+  toast(`${ROLES[p.role].e} ${p.name}：${ROLES[p.role].n}`)}
+async function revolution(p,sp){
+  p.revUsed=1;
+  if(Math.random()<sp){
+    log(`💥 ${p.name}の革命が成功！ 独裁政権が崩壊した！`,'#2f9e44',1);
+    setRegime(null);PRES=null;p.bond=cl(p.bond+12);p.money+=r10(30*mp(p));
+    toast('💥 革命成功！ 独裁政権が崩壊した');
+    const h=PL.find(o=>!o.cpu&&!o.done);if(h)await ask('💥 革命、成功！',`${p.name}の呼びかけに民衆が立ち上がり、独裁政権は崩壊しました。\n全員の職業が元に戻り、マップに色が戻ります。次の選挙で新しい大統領を選びましょう。`,['やった！'],h);
+  }else{
+    const x=lp(p.money,rs(.3));p.money-=x;p.role=null;p.jail={pos:0,t:0,from:p.pos};
+    log(`🚔 ${p.name}の革命は失敗…逮捕されて拘留所へ（罰金${x>0?'-'+fmt(x):'なし'}）`,'crimson',1);
+    toast(`🚔 ${p.name}の革命は失敗…`)}
+  render()}
+async function newRound(){
+  const old=TREND;TREND=evalTrend();
+  if(TREND!==old){const T=TRD[TREND];log(`📊 社会トレンドが変化：${T.n}（${T.s}）`,'#7048e8',1);if(humans()>0)toast(`${T.e} 社会トレンド：${T.n}　${T.s}`)}
+  if(ROUND%ELEC_EVERY===0){
+    if(!REGIME)await election();
+    else if(REGIME==='dict'&&Math.random()<.25)await enterRegime('anar','独裁政権が内部から崩壊し、国家の統治機能が失われた');
+  }
+  updateSoc()}
+
+// ===== 健康・デバフ・病気システム =====
+const MEDJ=['看護師','薬剤師'],CIV=['警察官','税務官'];
+const stageOf=p=>stg(p.pos,N);            // 0:学生 1:社会人 2:円熟期(老後入り) 3:最終章
+const AGE_DEC=[1,2,3,4],AGE_K=0.14;       // 毎ターンの自然減少（学生-1／社会人-2／老後-3〜-4）× AGE_K（ゲーム長で自動スケール）
+const DIS=[
+ {n:'風邪',t:[2,3],c:[5,10]},{n:'インフルエンザ',t:[2,4],c:[8,15]},{n:'胃腸炎',t:[2,3],c:[6,12]},
+ {n:'腰痛・ヘルニア',t:[3,5],c:[8,20]},{n:'骨折',t:[4,6],c:[15,30]},
+ {n:'うつ症状',t:[4,6],c:[8,20],ms:1},{n:'糖尿病（生活習慣病）',t:[5,6],c:[10,25],ms:1},
+ {n:'気管支炎',t:[2,4],c:[8,18],tag:'tar'},{n:'肺炎',t:[3,5],c:[15,35],tag:'tar'},{n:'COPD（慢性閉塞性肺疾患）',t:[5,6],c:[25,50],tag:'tar',ms:1},
+ {n:'急性肝炎',t:[3,5],c:[15,35],tag:'alc'},{n:'脂肪肝・肝機能障害',t:[3,6],c:[10,30],tag:'alc',ms:1},{n:'肝硬変',t:[5,6],c:[30,50],tag:'alc',ms:2}];
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const isMed=p=>MEDJ.includes(p.job);
+function sickChance(q,p){return 0}   // 病気はランダム抽選ではなく「病気マス」で固定
+function sickChance0(q,p){
+  const hp=p.hp,d=(p.deb.tar?1:0)+(p.deb.alc?1:0);
+  if(p.sick||p.done)return 0;
+  if(q.t==='h'){let c=(p.job==='プロスポーツ選手'?.07:0)+.34+(hp<30?.3:hp<50?.16:hp<70?.06:0)+d*.14;return Math.min(.75,c)}
+  return 0;
+}
+function pickDis(p){
+  const st=stageOf(p);
+  const L=DIS.filter(x=>(x.ms||0)<=st).map(x=>({x,w:x.tag==='tar'?(p.deb.tar?4:.35):x.tag==='alc'?(p.deb.alc?4:.35):1}));
+  let t=L.reduce((a,b)=>a+b.w,0)*Math.random();
+  for(const e of L){t-=e.w;if(t<=0)return e.x}return L[0].x}
+function getSick(p){
+  const d=pickDis(p);let turns=ri(d.t[0],d.t[1]),cut=0;
+  if(isMed(p)){cut=ri(1,2);turns=Math.max(1,turns-cut)}
+  const unit=Math.round((ri(d.c[0],d.c[1])+ri(d.c[0],d.c[1]))/2)*10;                      // 1回の通院代（内部単位。10＝1,000円）
+  const cost=CIV.includes(p.job)?Math.max(10,Math.round(unit/2/10)*10):unit;
+  p.sick={n:d.n,left:turns,total:turns,cost};
+  log(`🤒 病気を発症：${d.n}（${turns}ターン・通院代 毎ターン${medC(cost,p)?fmt(medC(cost,p)):'免除'}）`,'crimson');
+  let t=`体調を崩して「${d.n}」と診断された。${turns}ターンの通院が必要で、${medC(cost,p)?'毎ターン'+fmt(medC(cost,p))+'かかる。':'通院代は政策で免除されている。'}`;
+  if(cut)t+=`（${p.job}の早期治癒で${cut}ターン短縮）`;
+  if(CIV.includes(p.job))t+='（共済の守りで通院代は半額）';
+  if(d.tag==='tar')t+=' …ヤニかすの体には堪える。';
+  if(d.tag==='alc')t+=' …飲みすぎのツケが回ってきた。';
+  return t}
+const TOBA=/タバコ|喫煙|一服/,DRINKN=/飲み会|接待|飲み代|シャンパン|ドンペリ|酒/;
+function gainDeb(kind,base){
+  const p=S;if(p.deb[kind])return '';
+  const pr=Math.min(.9,base*(isMed(p)?.5:1)*(trOf(p.job)[kind==='tar'?'sm':'al']||1));
+  if(Math.random()<pr){p.deb[kind]=1;log(kind==='tar'?'🚬 ヤニかす になった！（病気・出費が増える）':'🍶 アル中 になった！（病気・出費が増え、ルーレットが暴走することも）','crimson');
+    return kind==='tar'?' 気づけば手放せなくなり「ヤニかす」状態に…。':' 気づけば毎晩の酒が欠かせず「アル中」状態に…。'}
+  return ''}
+function swapExpense(q){
+  const p=S,t=p.deb.tar,a=p.deb.alc;if(!t&&!a)return q;
+  if(TOBA.test(q.n)||DRINKN.test(q.n))return q;
+  const pr=Math.min(.6,(t?.28:0)+(a?.28:0));
+  if(Math.random()>=pr)return q;
+  const kind=t&&a?(Math.random()<.5?'tar':'alc'):(t?'tar':'alc');
+  const c=Math.max(20,Math.round(q.a*(kind==='tar'?.9:1.1)/10)*10);
+  return kind==='tar'?{...q,n:'タバコ代',a:c,dx:1}:{...q,n:'酒代',a:c,dx:1}}
+function tryCure(){
+  const p=S,ks=['tar','alc'].filter(k=>p.deb[k]);if(!ks.length)return '';
+  if(Math.random()<(isMed(p)?.55:.35)){const k=ks[Math.floor(Math.random()*ks.length)];p.deb[k]=0;
+    log(k==='tar'?'🚭 禁煙に成功！ ヤニかすが治った':'🥛 断酒に成功！ アル中が治った','green');
+    return k==='tar'?' 医師に強く勧められて禁煙に成功した！':' 医師に強く勧められて断酒に成功した！'}
+  return ''}
+async function turnStart(){
+  const p=S;let hit=false;
+  if(await cardTick(p))hit=true;
+  if(regimeTick(p))hit=true;
+  // 加齢による自然減少
+  const dec=AGE_DEC[stageOf(p)]*AGE_K*SC*(CIV.includes(p.job)?.75:1)*polM('agingM');
+  if(dec>0){p.hp=cl(p.hp-dec);if(p.hp<=0)chg(0,-.01)}
+  // 関係性・結婚による毎ターンの効果（段階が進むほど少し有利。付き合いの出費もかかる）
+  {const rl=partnersOf(p);let b=0,h=0,cp=0;
+    rl.forEach(o=>{const r=relOf(p,o),t=tierV(r.v);b+=[.01,.05,.1][t-1];h+=t===3?.05:0;cp+=[.02,.05,.07][t-1];if(!r.lock&&Math.random()<.05)relAdd(p,o,-1,true)});
+    if(p.married){b+=.06;h+=.02;cp+=.1}
+    if(!rl.length&&!p.married)b-=.06
+    b=Math.min(b,.3);if(b||h){p.bond=cl(p.bond+b*SC);p.hp=cl(p.hp+h*SC)}
+    if(cp&&Math.random()<Math.min(.5,cp)&&p.money>=20){p.money-=20;log(`🎁 付き合い・家計の出費 -${fmt(20)}`,'crimson');hit=true;TURNN+='付き合いの出費で2,000円かかった。'}}
+  // 職業ごとの日々の影響（仕事の人間関係・体への負担。マスとは無関係に毎ターンじわじわ）
+  if(p.job){const f=J[p.job].fx;chg(f[0]*.33,f[1]*.33*(trOf(p.job).cf?1.6:1),p,true)}
+  // 政策による毎ターンの効果
+  {const bt=polM('bondTurn',0),ub=polM('ubi',0);if(bt)p.bond=cl(p.bond+bt*SC);if(ub){p.money+=ub;log(`🏛 政府の給付金 +${fmt(ub)}`,'green');TURNN+=`政府から給付金${fmt(ub)}が配られた。`;hit=true}}
+  // 通院代
+  if(p.sick){
+    const ci=p.ins>0,cost=ci?0:medC(p.sick.cost,p),c=cost;p.money-=c;
+    log(`🏥 通院：${p.sick.n}（残り${p.sick.left}ターン）${c>0?'通院代-'+fmt(c):'通院代は免除'}`,'crimson');
+    TURNN=c>0?`【通院】${p.sick.n}の通院代${fmt(c)}を支払った。`:ci?`【通院】${p.sick.n}の通院に行った。医療保険のおかげで通院代は免除された。`:`【通院】${p.sick.n}の通院に行った。政策で通院代は免除された。`;
+    if(c<cost){chg(0,-3);TURNN+='払いきれず治療が不十分に…。'}
+    p.sick.left--;
+    if(p.sick.left<=0){log(`💊 ${p.sick.n}が完治した！`,'green');TURNN+=`${p.sick.n}が完治した！`;p.sick=null;TURNN+=tryCure()}
+    hit=true;
+  }
+  if(p.ins>0)p.ins--;
+  render();
+  if(hit)await walletTick(true);
+}
+let TURNN='';
+function tempt(q){
+  const p=S;let t='';
+  if(q.t==='l'&&DRINKN.test(q.n))t+=gainDeb('alc',.2);
+  if(q.t==='r'&&!p.done){
+    const r=Math.random();
+    if(r<.09||(r<.18&&true)){
+      const smoke=r<.09,c=0;
+      log(smoke?`🚬 付き合いで一服${c?`：費用-${fmt(c)}`:''}`:`🍺 飲み会に誘われた${c?`：費用-${fmt(c)}`:''}`,'crimson');
+      chg(2,0);
+      t+=(smoke?' みんなに誘われて一服。話が弾んだ（人間関係UP）。':' 飲み会に誘われて大盛り上がり（人間関係UP）。')+(c?`費用${fmt(c)}。`:'')+gainDeb(smoke?'tar':'alc',.35);
+    }
+  }
+  return t}
+
+
+// ===== 関係性（2人で共有する内部数値 0〜30。表示は段階のみ）・結婚 =====
+let REL={},PEND=[];
+const rk=(a,b)=>a.id<b.id?a.id+'-'+b.id:b.id+'-'+a.id;
+const relOf=(a,b)=>REL[rk(a,b)]||null;
+const tierV=v=>v<=0?0:v<=10?1:v<=20?2:3;
+const TN=['','知り合い','友人（恋人）','親友（夫婦）'];
+const relName=r=>r.m===2?'夫婦':r.m===1?'婚約者':TN[tierV(r.v)];
+function syncFr(){PL.forEach(p=>p.fr=[]);for(const k in REL){const [a,b]=k.split('-').map(Number);PL[a].fr.push(b);PL[b].fr.push(a)}}
+function relMake(a,b,v){const k=rk(a,b);if(REL[k])return REL[k];REL[k]={v:v||5,m:0,lock:0,full:0};syncFr();return REL[k]}
+function relAdd(a,b,d,quiet){
+  const k=rk(a,b),r=REL[k];if(!r||!d)return;
+  const t0=tierV(r.v);
+  if(d<0){
+    if(r.full)return;
+    let v=r.v+d;if(r.lock&&v<21)v=21;r.v=v;
+    if(r.v<=0){delete REL[k];syncFr();if(!quiet)log(`💔 ${a.name}と${b.name}の関係性が解消された…`,'crimson');chg(-2,0,a);chg(-2,0,b);return}
+  }else r.v=Math.min(30,r.v+d);
+  if(r.v>=21)r.lock=1;if(r.v>=30)r.full=1;
+  const t1=tierV(r.v);
+  if(t1>t0&&!quiet){log(`🌟 ${a.name}と${b.name}の関係性が「${relName(r)}」にランクアップ！`,'green');chg(2.5,0,a);chg(2.5,0,b)}
+}
+const relTo=(a,b,tier)=>{const r=relOf(a,b);if(!r)return;const need=[0,1,11,21][tier];if(r.v<need)relAdd(a,b,need-r.v)};
+const partnersOf=p=>PL.filter(o=>o!==p&&relOf(p,o));
+const pick1=a=>a[Math.floor(Math.random()*a.length)];
+function ask(title,text,opts){return new Promise(res=>{
+  $('askimg').innerHTML=vis('events','dialog','','card');$('askt').textContent=title;$('askx').textContent=text;
+  $('aska').innerHTML=opts.map((o,i)=>`<button data-i="${i}" class="${i?'alt':''}">${esc(o)}</button>`).join('');
+  $('ask').classList.add('on');
+  $('aska').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('ask').classList.remove('on');$('aska').onclick=null;res(+b.dataset.i)};
+})}
+async function runPend(){while(PEND.length){const f=PEND.shift();try{await f()}catch(e){console.error(e)}}}
+const SPN=['さくら','ゆうと','あおい','はると','みお','そうた','ひなた','りく','ゆい','けんじ'];
+// ----- 出会い（学生時代のストップマス）-----
+
+// ===== 運命の出会いルーレット（相手プレイヤーが縦リストの点滅で決まる）=====
+async function showPlayerRoulette(p,others,win){
+  const cpu=p.cpu,idx=others.indexOf(win),n=others.length;
+  const relTxt=o=>{const r=relOf(p,o);return r?relName(r):'初対面'};
+  const relCls=o=>{const r=relOf(p,o);return !r?'r0':r.m?'rm':'r'+tierV(r.v)};
+  $('vrt').textContent='✨ 運命の出会いルーレット';
+  $('vrs').textContent=cpu?`${p.name}（CPU）の運命の相手は…`:`${p.name}さんの運命の相手は…？　好きなタイミングでストップ！（15秒で自動停止）`;$('vrr').textContent='';
+  $('vrst').innerHTML=others.map((o,i)=>`<div class="vrw pl" data-i="${i}"><span class="vn" style="background:none;width:auto;height:auto">${avHTML(o,'34px')}</span><span class="vt"><b>${esc(o.name)}</b>${o.cpu?' 🤖':''}</span><b class="vw ${relCls(o)}">関係性：${relTxt(o)}</b></div>`).join('');
+  $('vroul').classList.add('on');$('vrw').classList.remove('tense');
+  const rr=[...($('vrst').children||[])],rows=Array.from({length:n},(_,i)=>rr[i]||{classList:{add(){},remove(){}}});
+  const go=$('vrgo');let cur=-1;const lit=i=>{if(cur>=0)rows[cur].classList.remove('cur');cur=i;rows[i].classList.add('cur')};
+  let pos=Math.floor(Math.random()*n),stopped=!!cpu;
+  if(cpu){go.style.display='none';await sleep(200)}
+  else{go.style.display='block';go.disabled=false;go.textContent='■ ストップ！';go.classList.add('stp');
+    go.onclick=()=>{stopped=true;go.disabled=true;go.onclick=null};setTimeout(()=>{stopped=true},15000);au()}
+  beep(220,.4,'sawtooth',.05);
+  const spd=n>=6?167:n>=4?200:260;
+  if(!cpu)while(!stopped){lit(pos);beep(700+(pos%5)*70,.05,'square',.07);pos=(pos+1)%n;await sleep(spd)}
+  go.style.display='none';if(!cpu)$('vrs').textContent=`${p.name}さんの運命の相手は…！`;
+  const last=cpu?pos:(pos+n-1)%n,steps=n+((idx-last)%n+n)%n+(n<5?n:0);
+  for(let j=1;j<=steps;j++){const i=(last+j)%n,q=j/steps;lit(i);beep(700+(i%5)*70-300*q,.05,'square',.07);
+    if(!cpu&&q>.7){$('vrw').classList.add('tense');if(j%2===0)beep(80,.18,'sine',.12)}
+    if(j<steps)await sleep(cpu?70+Math.pow(q,3)*180:spd+Math.pow(q,2.5)*800)}
+  $('vrw').classList.remove('tense');rows[idx].classList.add('win');fanfare(4);
+  $('vrr').innerHTML=`<span style="color:#d6336c">✨ 運命の相手は ${esc(win.name)}！（関係性：${relTxt(win)}）</span>`;
+  await new Promise(res=>{let done=false;const fin=()=>{if(done)return;done=true;res()};$('vroul').onclick=fin;setTimeout(fin,cpu?700:2400)});
+  $('vroul').onclick=null;$('vroul').classList.remove('on')}
+async function introFlow(p){
+  const others=PL.filter(o=>o!==p&&!o.done&&!o.jail);
+  if(!others.length){chg(3,0,p);return}
+  const fresh=others.filter(o=>!relOf(p,o)),o=pick1(fresh.length?fresh:others);
+  await showPlayerRoulette(p,others,o);
+  const had=!!relOf(p,o);
+  if(had)relAdd(p,o,2);else relMake(p,o,5);
+  chg(5,0,p);chg(5,0,o);
+  const T=[`入学式の日、道に迷っていた${o.name}に声をかけたのがきっかけで、自然と話すようになった。`,`教室の席替えで${o.name}の隣になり、好きなものが同じだとわかって意気投合した。`,`部活の見学で一緒になった${o.name}と、帰り道にいつまでも話し込んだ。`];
+  const t=had?`${o.name}とは前から顔見知りだったが、この日の出来事でぐっと距離が縮まった。`:pick1(T);
+  log(`✨ 運命の出会い：${p.name}は${o.name}と${had?'さらに親しくなった':'「知り合い」になった'}`,'green');
+  if(!p.cpu)await ask('✨ 運命の出会い',`${t}\n\n${o.name}と「${relName(relOf(p,o))}」になりました。二人とも人間関係値がアップ！`,['OK']);
+}
+// ----- 人間関係マスのランダム効果 -----
+function relEvent(force){
+  const p=S,others=PL.filter(o=>o!==p&&!o.done&&!o.jail);if(!others.length||(!force&&Math.random()>.3))return false;
+  const part=partnersOf(p),unk=others.filter(o=>!relOf(p,o));
+  const near=others.filter(o=>Math.abs(o.pos-p.pos)<=5);
+  const O=[];
+  O.push({w:3,k:'leader',ok:true});
+  if(near.length)O.push({w:3,k:'near'});
+  O.push({w:.8,k:'all'});
+  if(part.some(o=>tierV(relOf(p,o).v)<3))O.push({w:1.2,k:'raise'});
+  if(part.some(o=>PL.some(y=>y!==p&&y!==o&&!relOf(p,y)&&relOf(o,y))))O.push({w:2,k:'intro'});
+  if(part.length)O.push({w:3,k:'fight'});
+  const sp=p.married&&p.married.to>=0&&PL[p.married.to]&&relOf(p,PL[p.married.to]);
+  if(sp&&!PL[p.married.to].done)O.push({w:4,k:'couple'});
+  let t=O.reduce((a,b)=>a+b.w,0)*Math.random(),ev=O[0];for(const e of O){t-=e.w;if(t<=0){ev=e;break}}
+  const know=(o,v)=>{const had=!!relOf(p,o);if(had){if(v)relAdd(p,o,v)}else relMake(p,o,5);chg(had?1:2,0,p);chg(had?1:2,0,o);return had};
+  if(ev.k==='leader'){
+    const o=others.slice().sort((a,b)=>b.pos-a.pos)[0],had=know(o,1);
+    say(`いま一番先を進んでいると噂の${o.name}。思い切って話しかけてみると、意外と気さくで話が弾んだ。`+(had?'（さらに親しくなった）':'「知り合い」になった！'));log(`💞 ${o.name}と${had?'親しくなった':'知り合いになった'}`,'green');
+  }else if(ev.k==='near'){
+    near.forEach(o=>know(o,0));
+    say(`近くを歩いていた${near.map(o=>o.name).join('・')}と、道端でばったり。一緒にお茶をして、みんなと「知り合い」になった！`);log(`💞 ${near.map(o=>o.name).join('・')}と交流した`,'green');
+  }else if(ev.k==='all'){
+    others.forEach(o=>know(o,0));
+    say('町内の大交流会に参加！ 出会った全員と連絡先を交換して、プレイヤーみんなと「知り合い」になった！');log('🎊 全員と交流！','green');
+  }else if(ev.k==='raise'){
+    const cand=part.filter(o=>tierV(relOf(p,o).v)<3);
+    say('これまでの縁を大切にしたくなった。誰との関係を深めようか。');
+    PEND.push(async()=>{
+      let o;
+      if(p.cpu||cand.length===1)o=pick1(cand);
+      else{const i=await ask('🤝 関係を深める','関係性を1段階上げる相手を選んでください。',cand.map(c=>`${c.name}（いまは「${relName(relOf(p,c))}」）`));o=cand[i]}
+      const before=relName(relOf(p,o));relTo(p,o,tierV(relOf(p,o).v)+1);
+      chg(5,0,p);chg(5,0,o);log(`🤝 ${o.name}との関係を深めた（${before}→${relName(relOf(p,o))}）`,'green');
+      if(!p.cpu)await ask('🤝 関係が深まった',`${o.name}と二人きりでじっくり語り合い、関係が「${relName(relOf(p,o))}」になりました。`,['OK']);
+    });
+  }else if(ev.k==='intro'){
+    const o=pick1(part.filter(o=>PL.some(y=>y!==p&&y!==o&&!relOf(p,y)&&relOf(o,y)))),y=pick1(PL.filter(y=>y!==p&&y!==o&&!relOf(p,y)&&relOf(o,y)));
+    relMake(p,y,5);relAdd(p,o,1);chg(6,0,p);chg(6,0,y);
+    say(`${o.name}が、友達の${y.name}を紹介してくれた！ 話してみるとすぐに打ち解けて「知り合い」になった。`);log(`💞 ${o.name}の紹介で${y.name}と知り合った`,'green');
+  }else if(ev.k==='fight'){
+    const o=pick1(part);relAdd(p,o,-4);chg(-3,0,p);chg(-3,0,o);
+    say(`ささいなことで${o.name}と口論になってしまった…。気まずい空気が流れる。`);log(`💢 ${o.name}と口論`,'crimson');
+  }else{
+    const o=PL[p.married.to];relAdd(p,o,3);chg(3,0,p);chg(3,0,o);
+    say(`結婚してから初めての記念日。${o.name}と二人で食事に出かけ、あらためて絆を感じた。`);log(`💞 ${o.name}との絆が深まった`,'green');
+  }
+  return true;
+}
+// ----- 結婚 -----
+const giftAmt=(X,N)=>{const r=relOf(X,N);return (2+Math.floor((r?r.v:0)/4))*10};
+async function giftFlow(nw){
+  for(const X of PL){
+    if(nw.includes(X)||X.done||X.jail)continue;
+    const amts=nw.map(N=>giftAmt(X,N)),total=amts.reduce((a,b)=>a+b,0),names=nw.map(n=>n.name).join('・');
+    let give;
+    if(X.money<total){give=null;log(`💸 ${X.name}は祝儀を出せなかった…`,'crimson');nw.forEach(N=>relAdd(X,N,-4))}
+    else if(X.cpu)give=Math.random()<(nw.some(N=>relOf(X,N))?.85:.55);
+    else give=(await ask(`💒 ${X.name}さん：祝儀を渡しますか？`,`${names}さんの結婚式です。\n祝儀は合計${fmt(total)}。渡すと関係が深まり、渡さないと関係が悪くなります。\n（所持金 ${fmt(X.money)}）`,[`祝儀を渡す（${fmt(total)}）`,'渡さない'],X))===0;
+    if(give===true){X.money-=total;nw.forEach((N,j)=>{N.money+=amts[j];relAdd(X,N,3)});log(`💴 ${X.name}が祝儀${fmt(total)}を渡した`,'green')}
+    else if(give===false){nw.forEach(N=>relAdd(X,N,-9));log(`🙅 ${X.name}は祝儀を渡さなかった…`,'crimson')}
+  }
+}
+function finalizeEng(p,o,ceremony){
+  const r=relOf(p,o);p.married={to:o.id,nm:o.name};p.engTo=null;
+  if(r){r.m=2;relAdd(p,o,2,true)}
+  chg(5,2,p);log(`💍 ${p.name}と${o.name}が${ceremony?'式を挙げて':''}夫婦になった！`,'green');
+}
+async function marryFlow(p,idx){
+  if(p.married)return;
+  if(p.engTo!=null){const o=PL[p.engTo];finalizeEng(p,o,true);
+    if(!p.cpu)await ask('💒 結婚式',`${o.name}さんとの式を挙げました。二人は「夫婦」になりました。`,['OK']);return}
+  let cands=PL.filter(o=>o!==p&&!o.done&&!o.jail&&!o.married&&o.engTo==null&&relOf(p,o)&&relOf(p,o).v>=11).sort((a,b)=>relOf(p,b).v-relOf(p,a).v);
+  let done=false;
+  while(!done){
+    let ch;
+    if(p.cpu){const r=Math.random();ch=cands.length&&r<.55?2:r<.55+.45*.6?1:0}
+    else ch=await ask('💍 結婚マス','人生の大きな岐路。結婚するか、しないか。\n結婚すると「既婚者」になり、プレイヤー全員から祝儀が届きます。（既婚者には離婚の危険もあります）\n友人以上の相手とは、相手の了承があればプレイヤー同士でも結婚できます。',['結婚しない','架空の人と結婚する',...cands.map(o=>`${o.name}さんと結婚する（相手の了承が必要）`)]);
+    if(ch===0){log(`🚫 ${p.name}は結婚しなかった`);if(!p.cpu)await ask('結婚しなかった','今回は結婚しない道を選びました。自分らしく進んでいきます。',['OK']);done=true}
+    else if(ch===1){
+      const nm=pick1(SPN);p.married={to:-1,nm};chg(6,2,p);log(`💍 ${p.name}は${nm}さんと結婚した！`,'green');
+      await giftFlow([p]);done=true}
+    else{
+      const o=cands[ch-2];const r=relOf(p,o);let ok;
+      if(o.cpu)ok=Math.random()<(r.v>=21?.9:.6);
+      else ok=(await ask(`💍 ${o.name}さん：プロポーズ`,`${p.name}さんから結婚の申し込みです。受けますか？\n（受けると、あなたにも祝儀が届きます）`,['受ける','断る'],o))===0;
+      if(!ok){log(`💔 ${o.name}はプロポーズを断った…`,'crimson');relAdd(p,o,-3);chg(-6,0,p);cands=cands.filter(c=>c!==o);if(!p.cpu)await ask('プロポーズは断られた…',`${o.name}さんには断られてしまいました。`,['OK']);if(!cands.length&&p.cpu)done=true;continue}
+      r.m=1;r.v=Math.max(r.v,21);r.lock=1;p.married={to:o.id,nm:o.name};
+      const passed=!!o.seen[idx];
+      if(passed){o.married={to:p.id,nm:p.name};r.m=2}else o.engTo=p.id;
+      chg(6,2,p);chg(5,1,o);log(`💍 ${p.name}と${o.name}が結婚！ 関係は「${relName(r)}」に`,'green');
+      await giftFlow([p,o]);done=true}
+  }
+}
+async function pickPass(p,m){
+  if(p.cpu)return Math.random()<.5;
+  const o=PL[p.engTo];
+  return (await ask('💍 結婚マス',`${o.name}さんと婚約中です。ここで止まって式を挙げますか？\nそれとも1マスとして数えて、そのまま先に進みますか？`,['ここで止まって式を挙げる（この番はここまで）','1マスとして数えて、そのまま進む']))===1;
+}
+function divorce(p){
+  const sp=p.married.to>=0?PL[p.married.to]:null,c=0;
+  chg(-14,0,p);
+  if(sp){sp.married=null;chg(-10,0,sp);const r=relOf(p,sp);if(r){r.m=0;r.lock=0;r.full=0;r.v=Math.min(r.v,6)}}
+  const nm=p.married.nm;p.married=null;
+  log(`💔 離婚…${c>0?`（慰謝料-${fmt(c)}）`:''}`,'crimson');
+  say(pick1([`すれ違いが続き、${nm}と話し合いの末に離婚することになった。`,`価値観の違いが埋まらず、${nm}と離婚…。${c>0?`慰謝料と財産分与で${fmt(c)}を支払った。`:''}`,`長く続いた喧嘩の末に、${nm}と別々の道を歩むことを決めた。`])+(c>0&&false?'':''));
+}
+function relChips(p){
+  const rl=partnersOf(p);if(!rl.length)return '<span class="chip">まだいない</span>';
+  return rl.map(o=>{const r=relOf(p,o);return `<span class="chip ${r.m?'mar':'t'+tierV(r.v)}" style="border-left:4px solid ${o.col}">${esc(o.name)}：${relName(r)}</span>`}).join('')}
+// ===== 臨時マス（警察官の逮捕マス／税務官の税金マス）：設置した本人の次の手番で消える =====
+let TRAPS=[];
+const TRK={a:{e:'🚔',n:'臨時逮捕マス',col:'#e03131'},t:{e:'🧾',n:'臨時税金マス',col:'#e8590c'}};
+async function officerPlace(p){
+  const k=p.job==='警察官'?'a':p.job==='税務官'?'t':null;if(!k||p.jail||p.done)return;
+  const mx=rollMax(p)+2,cand=[];
+  for(let d=2;d<=mx&&p.pos+d<N-4;d++){const i=p.pos+d,q=SQ[i];if(q&&'glnhr'.includes(q.t)&&!TRAPS.some(t=>t.i===i))cand.push(i)}
+  if(!cand.length)return;
+  let i;
+  if(p.cpu){if(Math.random()<.35)return;i=cand[Math.floor(Math.random()*cand.length)]}
+  else{const L=cand.slice(0,8);
+    const r=await ask(`${TRK[k].e} ${TRK[k].n}を設置しますか？`,`進行方向の通常マスに、次のあなたの手番まで消えない${TRK[k].n}を1つ置けます。他のプレイヤーがそこに止まると、${k==='a'?'摘発されて拘留所へ送られます（摘発数が給料日ボーナスに）':'強制的に徴税され、一部があなたの収入になります（徴税額が給料日ボーナスに）'}。`,
+      L.map(x=>`${x}マス目「${SQ[x].n||({g:'収入',l:'支出',n:'SNS',h:'健康',r:'人間関係'})[SQ[x].t]||'マス'}」（あと${x-p.pos}マス）`).concat('設置しない'),p);
+    if(!(r>=0&&r<L.length))return;i=L[r]}
+  TRAPS.push({i,own:p.id,k});log(`${TRK[k].e} ${TRK[k].n}を${i}マス目に設置！（次の手番まで）`,k==='a'?'#e03131':'#e8590c');render();
+  if(!p.cpu)toast(`${TRK[k].e} ${i}マス目に${TRK[k].n}を設置`)}
+function trapHit(q,i){   // 止まったプレイヤー（S）に臨時マスの効果。戻り値true＝通常マスの効果をスキップ（拘留）
+  if(REGIME==='anar'||(REGIME==='dict'&&S.role==='dog'))return false;
+  const tr=TRAPS.find(t=>t.i===i&&t.own!==S.id);if(!tr)return false;const own=PL[tr.own];if(!own)return false;
+  if(tr.k==='a'){
+    if(S.job==='警察官'||S.jail)return false;
+    TRAPS=TRAPS.filter(t=>t!==tr);
+    const jj=J[S.job]||{},x=lp(S.money,rs(Math.min(.9,(jj.fine||.4)*polM('fineM'))));S.money-=x;S.jail={pos:0,t:0,from:S.pos};
+    own.bust=(own.bust||0)+1;PL.forEach(o=>{if(o!==own&&o.job==='警察官')o.bust=(o.bust||0)+.5});
+    log(`🚔 ${own.name}の臨時逮捕マスに止まり摘発！ 罰金${x>0?'-'+fmt(x):'（所持金がなく免除）'}。拘留所へ送られた…`,'crimson');
+    say(`${own.name}が仕掛けた臨時の検問に引っかかった！ 逮捕されて罰金${x>0?fmt(x):'は所持金がなく免除に'}。そのまま拘留所へ連行された…。`);return true}
+  if(S.job==='税務官')return false;
+  TRAPS=TRAPS.filter(t=>t!==tr);
+  const r=rs(Math.min(.9,.12*tStr())),x=lp(S.money,r);
+  if(x>0){S.money-=x;const y=Math.max(10,Math.round(x*.6/10)*10);own.money+=y;own.taxAcc=(own.taxAcc||0)+x;
+    log(`🧾 ${own.name}の臨時税金マス！ 所持金の${Math.round(r*100)}%を徴収 -${fmt(x)}（${own.name}に${fmt(y)}）`,'crimson');
+    say(`${own.name}の臨時税務調査にあった！ 所持金の${Math.round(r*100)}%にあたる${fmt(x)}を徴収された。（一部は${own.name}の収入に）`)}
+  else{log(`🧾 ${own.name}の臨時税金マス！ …でも徴収できる所持金がなかった`);say(`${own.name}の臨時税務調査にあったが、取られる所持金がなかった。`)}
+  return false}
+function payBonus(p,base){   // 警察官：摘発数／税務官：徴税額に応じた給料日ボーナス
+  let b=0,t='';
+  if(p.job==='警察官'&&p.bust>0){b=Math.min(base*2,Math.max(10,Math.round(base*.35*p.bust*Math.sqrt(pStr())/10)*10));t=`摘発${p.bust%1?p.bust.toFixed(1):p.bust}件の功績`;p.bust=0}
+  else if(p.job==='税務官'&&p.taxAcc>0){b=Math.min(base*2,Math.max(10,Math.round(p.taxAcc*.3/10)*10));t=`徴税${fmt(p.taxAcc)}の功績`;p.taxAcc=0}
+  if(b>0){const g=add(b,true);log(`🎖 ${t}で給料日ボーナス +${fmt(g)}`,'green');TURNN+=`${t}が認められ、ボーナス${fmt(g)}が支給された。`;return g}
+  return 0}
+function land(q,i){
+  if(trapHit(q,i))return;
+  const hs=[...(q.n||'')].reduce((a,c)=>a+c.charCodeAt(0),0)+i;
+  if(Math.random()<sickChance(q,S)){log('🤒 病気マス：体調不良が悪化！','crimson');say(getSick(S));chg(0,-6);return}
+  if(q.t==='l')q=swapExpense(q);
+  NOTE+=tempt(q);
+  switch(q.t){
+    case 'p':{const g=add(Math.max(10,Math.round(q.a*1.5/10)*10));payBonus(S,q.a);log(`💴 給料日にぴったり停止！ 給料1.5倍：+${fmt(g)}`,'green');
+      say([`給料日にぴったり立ち止まった！ ${S.job}としての給料が1.5倍の${fmt(g)}になって振り込まれた。`,`今月も働いた分の給料${fmt(g)}が入った。`,`給料日！ ${fmt(g)}が口座に振り込まれた。ほっと一息。`][hs%3]);break}
+    case 'g':{const g=add(q.a,false,true);log(`💰 ${q.n}：+${fmt(g)}`,'green');
+      say((GS[q.n]||[`${S.job||'毎日'}の仕事で「${q.n}」が入った！ {a}をもらう。`,`頑張りが認められ「${q.n}」で{a}をゲット！`,`「${q.n}」で思わぬ収入！ {a}が懐に入った。`][hs%3]).replace('{a}',fmt(g)));
+      break}
+    case 'l':{const qa=Math.max(10,Math.round(q.a*lossM()/10)*10);S.money-=qa;log(`💸 ${q.n}：-${fmt(qa)}`+(qa!==q.a?`（社会情勢で${fmt(q.a)}→${fmt(qa)}）`:''),'crimson');
+      say((LS[q.n]||[`「${q.n}」の支払いが発生…。{a}を払う。`,`うっかり「${q.n}」で{a}も使ってしまった。`,`避けられない出費「${q.n}」。{a}を支払う。`][hs%3]).replace('{a}',fmt(qa)));if(S.job==='転売ヤー'&&Math.random()<.22){const x=Math.max(10,Math.round(q.a*1.5/10)*10);S.money-=x;log(`📉 転売規制・相場急落の直撃！ 追加で-${fmt(x)}`,'crimson');NOTE+=` さらに転売規制と相場の急落が直撃して${fmt(x)}の損失…。`}
+      break}
+    case 'h':case 'r':{
+      assignEv(q,i);
+      if(q.dis){
+        if(Math.random()>=Math.min(1,sickMul())){log('🤒 病気マス：軽い不調で済んだ','#888');say('体調を崩しかけたが、社会の体制が整っているおかげで軽い不調で済んだ。');chg(0,-2);break}
+        if(S.sick){log('🤒 病気マス：すでに通院中で悪化','crimson');say('体調を崩した。すでに通院中の病気が少し悪化してしまった…。');chg(0,-4)}
+        else{log('🤒 病気マス：体調不良が悪化！','crimson');say(getSick(S));chg(0,-6)}
+        break}
+      if(q.soc){if(!relEvent(true)){log('💞 交流の機会：誰とも会えなかった');say('人の輪に入ろうと出かけたが、今日は誰とも会えなかった。ささやかな散歩になった。');chg(2,0)}break}
+      const e=q.ev;
+      log(q.t==='h'?'🏥 健康イベント':'💞 人間関係イベント');
+      say(e.t);chg(q.t==='h'?0:e.d,q.t==='h'?e.d:0);if(q.t==='h'&&e.d>0)NOTE+=tryCure();
+      break}
+    case 'f':{
+      const F=PL.filter(o=>S.fr.includes(o.id)),n=F.length,rnd=a=>a[Math.floor(Math.random()*a.length)];
+      if(q.k==='wed'){
+        if(n){log(`💒 友達の結婚式に出席（友達${n}人）`,'green');say(`友達の結婚式に招待された！ ${n}人の友達とも再会して大盛り上がり。`);chg(Math.min(16,4+n*3),0);F.forEach(f=>relAdd(S,f,2))}
+        else{log('💒 友達の結婚式：呼んでくれる友達がいなかった…');say('友達の結婚式…に呼んでくれる友達が、一人もいなかった。ひとりで街を歩く。');chg(-5,0)}
+      }else if(q.k==='help'){
+        if(n){const f=rnd(F);log(`🤝 ${f.name}に励まされた`,'green');say(`困っているところを友達の${f.name}が助けてくれた！ 温かい言葉に救われた。`);chg(5,0);chg(3,0,f);relAdd(S,f,3)}
+        else{log('困ったときに頼れる友達がいなかった…');say('困ったときに頼れる友達が一人もいなかった…。孤独がしみる。');chg(-5,0)}
+      }else if(q.k==='trial'){
+        if(n){const f=rnd(F);
+          if(Math.random()<.6){say(`${f.name}と本音でぶつかり合って、より深い絆で結ばれた！`);chg(5,0);chg(5,0,f);relAdd(S,f,4)}
+          else{relAdd(S,f,-8);say(relOf(S,f)?`${f.name}と大ゲンカ！ 友情に亀裂が入ったが、積み重ねた絆はまだ切れていない。`:`${f.name}と大ゲンカ！ 友情に亀裂が入り、絶交してしまった…。`);chg(-8,0);chg(-8,0,f)}}
+        else{log('ぶつかり合える友達さえいない…');say('ぶつかり合える友達さえいない…。静かな日常が過ぎていく。');chg(-2,0)}
+      }else{
+        const d=Math.max(-6,Math.min(14,n*4-4));
+        log(`🎓 同窓会（友達${n}人）`);say(n?`同窓会で${n}人の友達と思い出話に花が咲いた！`:'同窓会に行っても、話せる友達が誰もいなかった…。');chg(d,0)}
+      break}
+    case 't':{
+      if(REGIME==='anar'){log('🏛 無政府状態：税務署は機能せず、課税なし','#888');say('税務署の窓口はシャッターが下りたまま。無政府状態で、税金を取り立てる者は誰もいない。');break}
+      const aud=Math.random()<Math.min(.5,.12*tStr()),r=rs(Math.min(.9,((J[S.job]||{}).tax||0.1)*taxMul()*crackM(S,'t')*(aud?1.5:1))),x=lp(S.money,r);S.money-=x;if(aud)log('🔎 税務調査が入った！ 追徴課税で税額が1.5倍','crimson');PL.forEach(o=>{if(o!==S&&o.job==='税務官')o.taxAcc=(o.taxAcc||0)+x*.2});
+      log(`🏛 税務署：所持金の${Math.round(r*100)}%を課税！ ${x>0?'-'+fmt(x):'（取られる所持金がなかった）'}`,'crimson');
+      say(`税務署から調査の通知が届いた！ 所持金の${Math.round(r*100)}%${x>0?'にあたる'+fmt(x)+'を課税された。':'を課税されかけたが、取られる所持金はなかった。'}`);break}
+    case 'k':
+      if(S.skill>=5){log(`🔥 ${q.n}：すでに実力は最高レベル！`,'green');say(`${q.n}はもう完璧にこなせる。すでに実力は最高レベルだ！`)}
+      else{S.money-=30;const ath=S.job==='プロスポーツ選手';S.skill=Math.min(5,S.skill+Math.min(1,220/N)*(ath?2:1));log(`🔥 ${q.n}で実力アップ！ 実力LV${S.skill.toFixed(1)}（収入×${(1+.5*S.skill).toFixed(1)}） 費用-3,000円`,'green');say(`「${q.n}」に打ち込んだ！ 実力がLV${S.skill.toFixed(1)}にアップし、これからの収入が×${(1+.5*S.skill).toFixed(1)}になる。（費用3,000円）`);}
+      break;
+    case 'a':{
+      const pr=Math.min(.9,arrestP((J[S.job]||{}).arrest||0,S.job)*crackM(S,'a'));
+      if(Math.random()<pr){const jj=J[S.job]||{},x=lp(S.money,rs(Math.min(.9,(jj.fine||.4)*polM('fineM'))));S.money-=x;S.jail={pos:0,t:0,from:S.pos};PL.forEach(o=>{if(o!==S&&o.job==='警察官')o.bust=(o.bust||0)+.5});log(`🚔 摘発！逮捕されて罰金${x>0?'-'+fmt(x):'（所持金がなく免除）'}。拘留所へ送られた…`,'crimson');say(`警察が突然踏み込んできた！ 逮捕されて罰金${x>0?fmt(x):'は所持金がなく免除に'}。そのまま拘留所へ連行された…。（次の番から拘留所マップで過ごす）`)}
+      else{log('🚔 摘発チェック：今回は無事に通過した…（セーフ）');say('摘発チェックが入ったが、書類に不備はなくギリギリ無事に通過した。冷や汗が止まらない…。')}
+      break}
+    case 'n':
+      if(S.job==='配信者'){
+        const r=Math.random();
+        if(r<.09+(TREND==='creator'?.04:0)){const l=Math.max(10,Math.floor(Math.max(0,S.money)/2/10)*10);S.money-=l;log(`🔥🔥 大炎上！！ 所持金の半分が吹き飛んだ… -${fmt(l)}`,'crimson');say(`過去の投稿が掘り返されて大炎上！ スポンサーは総撤退、収益は凍結され、所持金の半分にあたる${fmt(l)}が一気に吹き飛んだ…。`)}
+        else if(r<.36+(TREND==='creator'?.08:0)){const l=Math.max(100,Math.min(Math.round(Math.max(0,S.money)*.6/10)*10||100,lp(S.money,rs(0.25))*2));S.money-=l;log(`🔥 炎上（ガラスのメンタルで被害2倍）！スポンサー離脱… -${fmt(l)}`,'crimson');say(`何気ない一言が切り取られて大炎上…！ スポンサーが離脱して${fmt(l)}を失った。`)}
+        else{const g=add(Math.round((800+Math.floor(Math.random()*700))*1.5/10)*10*(TREND==='creator'?2:1),1);log(`🚀 バズった！投げ銭が殺到 +${fmt(g)}`,'green');say(`SNSで投稿した日常の一コマが万バズ！ 投げ銭と案件依頼が殺到して${fmt(g)}もらう。`)}
+      }else if(S.job==='漫画家'){
+        const r=Math.random();
+        if(r<.3){const g=add(Math.round((700+Math.floor(Math.random()*500))*1.5/10)*10*(TREND==='creator'?2:1));log(`💥 一撃の大ヒット！ 投稿した漫画が大バズり +${fmt(g)}`,'green');say(`SNSに載せた1ページ漫画が爆発的に拡散！ 単行本化の話まで舞い込み、${fmt(g)}を手にした。`)}
+        else if(r<.5+(TREND==='creator'?.1:0)){const c=60;S.money-=c;log(`📉 渾身の投稿がまったく伸びなかった… -${fmt(c)}`,'crimson');say(`徹夜で描いた自信作はほとんど反応がなく、宣伝費だけがかさんだ…。（${fmt(c)}）`)}
+        else{const g=add(Math.round(20*mp(S)/10)*10*(TREND==='creator'?2:1),1);log(`📱 SNSでいいねをもらった +${fmt(g)}`,'green');say(`SNSに投稿した日常の一コマが、ちょっとバズった！ 広告収入で${fmt(g)}もらう。`)}
+      }else if(S.job==='転売ヤー'&&Math.random()<.2){const l=Math.max(100,Math.min(Math.round(Math.max(0,S.money)*.5/10)*10||100,lp(S.money,rs(0.2))*2));S.money-=l;log(`🔥 転売が晒されて炎上！ガラスのメンタルで被害2倍 -${fmt(l)}`,'crimson');say(`転売の手口がSNSで晒されて大炎上…！ 返品と謝罪対応で${fmt(l)}を失った。`)
+      }else{const g=add(Math.round(20*mp(S)/10)*10*(TREND==='creator'?2:1),1);log(`📱 SNSでいいねをもらった +${fmt(g)}`,'green');say(`SNSに投稿した日常の一コマが、ちょっとバズった！ 広告収入で${fmt(g)}もらう。`)}
+      break;
+    case 'v':{
+      const nm=q.k;
+      const NO={rest:['温泉宿でひと休みしたが、まだ体力に余裕があり、いつもの休日で終わった。','休暇をとって散歩に出かけた。体調は悪くなく、ただの気分転換になった。','整体に行ってみたが「とくに問題ありませんね」と言われ、軽くマッサージされただけだった。'],
+        clinic:['町の無料健診を受けた。結果は「異常なし」。安心して帰路についた。','診療所に行ったが、待合室は大混雑。結局、検査は問題なしで終わった。','無料健診のお知らせは、すでに受診済みの人が対象外だった。'],
+        reunion:['旧友から連絡が来た。近況報告をして、またいつもの日常に戻った。','久しぶりの連絡かと思ったら、ただのグループLINEの一斉送信だった。','懐かしい人と連絡を取ろうとしたが、普段から会っている仲間ばかりで特に変化はなかった。'],
+        volun:['地域のボランティアに誘われたが、すでに定員いっぱいで見学だけで終わった。','ボランティア活動に参加。いつもの顔ぶれとの再確認で、特別なことは起きなかった。','清掃活動に参加したが、予定が合わずほとんど顔を出せなかった。'],
+        tokusei:['お上から「徳政令」のお触れが出た。が、あなたには借金がなく、関係のない話だった。','「徳政令」の掲示を見たが、帳消しにする借りは何もなかった。','借金の帳消しを求める人々で窓口は大行列。だが、あなたには縁のない話だった。'],
+        aid:['生活支援の窓口に相談したが、「まだ蓄えがあるようですね」と丁寧に断られた。','支援金の相談会に足を運んだが、受給条件に当てはまらず、お茶を一杯いただいて帰った。','窓口で話を聞いてもらったが「今は大丈夫そうですね」と言われ、パンフレットだけもらった。']}[nm];
+      const nope=()=>{log(`🛟 ${q.n}：今回は何も起きなかった`);say(pick1(NO))};
+      const up=(v,to)=>{const o=v==='bond'?S.bond:S.hp;S[v]=Math.max(o,to);return Math.round(S[v])-Math.round(o)};
+      if(nm==='rest'){if(S.hp<=10){S.hp=Math.max(S.hp,20);log('🛟 休養の日：しっかり休んで体力が戻った！','green');say('限界ぎりぎりの体を見かねた周りの勧めで、数日の休養を取った。ぐっすり眠って、体がずいぶん軽くなった。')}else nope()}
+      else if(nm==='clinic'){if(S.hp<=20){S.hp=Math.max(S.hp,40);log('🛟 無料健診：早めに見つかって回復！','green');say('町の無料健診で体の不調が早期に見つかった。すぐに治療と生活指導を受けて、体調がぐんと持ち直した。')}else nope()}
+      else if(nm==='reunion'){if(S.bond<=10){S.bond=Math.max(S.bond,20);log('🛟 旧友の連絡：孤独が和らいだ！','green');say('ふさぎ込んでいたところに、昔の友人から突然の連絡が。語り合ううちに、心が少し軽くなった。')}else nope()}
+      else if(nm==='volun'){if(S.bond<=20){S.bond=Math.max(S.bond,40);log('🛟 ボランティア：新しい仲間ができた！','green');say('地域のボランティアに参加してみると、温かい人たちに迎えられた。居場所ができて、人とのつながりが戻ってきた。')}else nope()}
+      else if(nm==='tokusei'){if(S.money<0){const n0=Math.ceil(-S.money/10);S.money=0;log(`🛟 徳政令：約束手形${n0}枚が全てチャラに！`,'green');say('お上から「徳政令」が出され、庶民の借金が帳消しに！ 抱えていた約束手形は、全てなかったことになった。')}else nope()}
+      else if(nm==='aid'){if(S.money>=0&&S.money<=30){S.money=Math.max(S.money,100);log('🛟 生活支援：支援金が出た！ 所持金が10,000円に','green');say('生活支援の窓口に相談すると、支援金が支給された。これで当面の生活は立て直せそうだ。')}else if(S.money<0)nope(),NOTE+='';else nope()}
+      break}
+    case 'x':{
+      const O=PL.filter(o=>o!==S&&!o.done&&!o.jail),act=PL.filter(o=>!o.done&&!o.jail),rnd=a=>a[Math.floor(Math.random()*a.length)];
+      if(!O.length){log('他に動けるプレイヤーがいないので何も起きなかった');say('周りに誰もいないので、何も起こらなかった。');break}
+      if(q.k==='collect'){let tot=0;O.forEach(o=>{const x=Math.min(30,pz(o.money));o.money-=x;tot+=x});const g=add(tot,1);log(`🎁 全員から3,000円ずつ集金！ 合計 +${fmt(g)}`,'green');say(`友人たちがお祝いに駆けつけた！ 全員から3,000円ずつ集まり、合計${fmt(g)}をもらう。`)}
+      else if(q.k==='treat'){let paid=0;for(const o of O){const x=Math.min(20,pz(S.money));S.money-=x;o.money+=x;paid+=x}log(`🍻 全員におごり！ ${paid>0?`${O.length}人に2,000円ずつ（合計 -${fmt(paid)}）`:'…と思ったが、財布が空だった'}`,'crimson');say(paid>0?`つい気が大きくなって全員におごることに！ ${O.length}人に2,000円ずつ、合計${fmt(paid)}を支払う。みんな大喜びだ。`:'つい気が大きくなって全員におごると言ったが、財布が空で…笑ってごまかした。')}
+      else if(q.k==='duel'){
+        const o=rnd(O);
+        if(Math.min(100,pz(o.money))<=0||Math.min(100,pz(S.money))<=0){log(`⚔ ${o.name}と対決！ …どちらも賭ける所持金が足りず引き分け`,'#888');say(`${o.name}と真剣勝負！ 賭けられる所持金が足りず、引き分けに終わった。`)}
+        else if(Math.random()<.5){const x=Math.min(100,pz(o.money));o.money-=x;S.money+=x;log(`⚔ ${o.name}と対決！ 勝利！ ${o.name}から${fmt(x)}を奪った！`,'green');say(`${o.name}と真剣勝負！ 気迫で押し切って勝利し、${fmt(x)}を手に入れた。ただ、気まずい空気も…。`)}
+        else{const x=Math.min(100,pz(S.money));S.money-=x;o.money+=x;log(`⚔ ${o.name}と対決… 敗北！ ${o.name}に${fmt(x)}取られた`,'crimson');say(`${o.name}と真剣勝負… 惜しくも敗北し、${fmt(x)}を取られてしまった。`)}
+      }else if(q.k==='steal'){
+        const r=O.reduce((a,b)=>b.money>a.money?b:a);
+        if(S.money>=r.money){log('🕵 妨害しようとしたが、自分が首位だったので何も起きなかった');say('首位のライバルを妨害しようとしたが、自分が首位だったので空振りに終わった。')}
+        else{const x=lp(r.money,.1);r.money-=x;S.money+=x;log(`🕵 首位の${r.name}を妨害！ ${fmt(x)}を奪った！`,'green');say(`首位の${r.name}にこっそり妨害工作！ ${fmt(x)}を横取りした。バレたら信用を失いそうだ…。`)}
+      }else if(q.k==='robin'){
+        const lo=act.reduce((a,b)=>b.money<a.money?b:a);
+        if(lo===S){S.money+=50;log('🙏 自分が最下位！ みんなの同情で寄付 +5,000円','green');say('自分が最下位だと知ったみんなが同情してくれた。励ましの寄付で5,000円もらう。');chg(3,0)}
+        else if(S.money<=0){log('💝 最下位の'+lo.name+'に寄付しようとしたが、自分も余裕がなかった');say('最下位の'+lo.name+'を見かねたが、自分も寄付できるほどの余裕がなかった。')}
+        else{const x=Math.min(50,pz(S.money));S.money-=x;lo.money+=x;log(`💝 最下位の${lo.name}に${fmt(x)}を寄付した`,'crimson');say(`今日は寄付の日。最下位の${lo.name}を見かねて${fmt(x)}を渡した。感謝されて心が温まった。`);chg(10,0)}
+      }else if(q.k==='back'){
+        const t=rnd(O);t.pos=Math.max(0,t.pos-5);log(`😈 ${t.name}を5マス戻した！（${t.pos}マス目へ）`,'green');say(`${t.name}の行く手に障害物を置いてやった！ ${t.name}は5マス戻される。ちょっと罪悪感…。`)
+      }
+      break}
+    case 'G':say('長い人生の旅路の末、ついにゴールにたどり着いた！');break;
+    case 'm':
+      log(`⭐ 強制イベント「${q.n}」発生！`,'#d9480f');
+      if(S.seen[i]){log('（体験済みのイベントなので何も起きなかった）');say('ここはもう経験したイベントだ。今回は何も起こらなかった。');break}
+      S.seen[i]=1;
+      if(REGIME&&['career','mid','fest'].includes(q.k)){say(REGIME==='dict'?'独裁政権の下で迎えた人生の転機。迎合するか、抗うか──生き方を選ぶときが来た。':'無法の世で迎えた人生の転機。耕して生き延びるか、奪って生き延びるか──選ぶときが来た。');PEND.push(()=>roleFlow(S,i))}
+      else if(q.k==='pick'&&REGIME){S.job='人間';log('🧍 極限状態のため就職活動は行われず、「人間」として生きることになった','#d9480f');say('就職活動どころではない。この国では誰もが「ただの人間」として生きている。')}
+      else if(q.k==='pick'){S.choosing=true;if(!S.cpu){$('jobpick').classList.remove('hide');$('jobpick').scrollIntoView&&$('jobpick').scrollIntoView({behavior:'smooth',block:'center'})}log('👔 就職活動！職業を選んでください','#d9480f');say('就職活動シーズン到来！ 面接を重ね、ついに自分の進む道を決めるときが来た。')}
+      else if(q.k==='salary')salary();
+      else if(q.k==='intro'){say('入学して数か月。教室や部活での何気ない出来事が、運命の出会いにつながっていく…。');PEND.push(()=>introFlow(S))}
+      else if(q.k==='marry'){const pe=S.engTo!=null;say(pe?`ついにこの日が来た。${PL[S.engTo].name}との結婚式の日だ。`:'人生の大きな岐路。「結婚」という選択が目の前にやってきた。');PEND.push(()=>marryFlow(S,i))}
+      else if(q.k==='career'){
+        const j=J[S.job];
+        if(j.c===0){const g=add(500);log(`📈 昇進・昇給のチャンス！ +${fmt(g)}`,'green');say(`長年の実績が評価されて、ついに昇進！ 昇給のボーナスとして${fmt(g)}をもらう。同僚たちも祝ってくれた。`);chg(4,0)}
+        else if(S.job==='漫画家'){const r=Math.random();
+          if(r<.38){const g=add(900+S.skill*350);log(`💥 一撃の大ヒット！ アニメ化決定！（実力LV${S.skill.toFixed(1)}） +${fmt(g)}`,'green');say(`連載作品がまさかの大ヒット！ アニメ化が決まり、${fmt(g)}もの印税が転がり込んだ。`);chg(5,-2)}
+          else if(r<.58){const c=60;S.money-=c;log(`📉 打ち切り… 連載が終了 -${fmt(c)}`,'crimson');say(`人気が伸びず、無念の打ち切り。机の上には片付け代と未回収の経費だけが残った…。（${fmt(c)}）`);chg(-6,-4)}
+          else{const g=add(300+S.skill*250);log(`🌟 実力に応じた大チャンス！（実力LV${S.skill.toFixed(1)}） +${fmt(g)}`,'green');say(`積み重ねた実力が花開いた！ 大きな仕事が舞い込み、${fmt(g)}をもらう。`);chg(2,-2)}}
+        else if(j.c===1){const g=add(300+S.skill*250);log(`🌟 実力に応じた大チャンス！（実力LV${S.skill.toFixed(1)}） +${fmt(g)}`,'green');say(`積み重ねた実力が花開いた！（実力LV${S.skill.toFixed(1)}） 大きな仕事が舞い込み、${fmt(g)}をもらう。`);chg(2,-2)}
+        else if(Math.random()<0.5){const g=add(800);log(`🚀 大ブレイク！ビッグな話が舞い込んだ +${fmt(g)}`,'green');say(`ついに大きな波が来た！ 一気に注目を浴びて、ビッグな話が舞い込み${fmt(g)}をもらう。`);chg(3,0)}
+        else{const x=lp(S.money,rs(0.3));S.money-=x;log(`📉 スキャンダルで一気に転落… ${x>0?'-'+fmt(x):''}`,'crimson');say(`スキャンダルが発覚して一気に転落…。信用を失い、${x>0?fmt(x)+'を失った。':''}人も離れていく…。`);chg(-15,-8)}
+      }else if(q.k==='mid'){
+        const c=Math.min(50,pz(S.money));S.money-=c;
+        if(S.bond<=S.hp){log(`🌅 人生の見直し：大切な人との時間を増やした${c>0?`（費用-${fmt(c)}）`:'（お金はかからなかった）'}`,'crimson');say(`人生の折り返し地点。ふと立ち止まり、疎遠になっていた人たちに連絡を取った。${c>0?`食事代などで${fmt(c)}かかったが、`:''}心が満たされた。`);chg(10,0)}
+        else{log(`🌅 人生の見直し：体を休める時間をとった${c>0?`（費用-${fmt(c)}）`:'（お金はかからなかった）'}`,'crimson');say(`人生の折り返し地点。ふと立ち止まり、体を休めることにした。${c>0?`人間ドックや休養で${fmt(c)}かかったが、`:''}体が軽くなった。`);chg(0,10)}
+      }else{
+        const g=add(200,1);log(`🎊 大感謝祭 +${fmt(g)}`,'green');say(`町をあげての大感謝祭！ みんなで盛り上がっていたら、ご祝儀として${fmt(g)}をもらった。心も体も満たされた。`);chg(10,6);
+      }
+      break;
+  }
+}
+
+function showEvent(q,i,L,dm,dr,dh){return new Promise(res=>{
+  const e=$('ev'),b=$('evb');
+  e.className=dm>0?'g':dm<0?'l':'';
+  $('evw').innerHTML=`${avHTML(S,'22px')} ${esc(S.name)}　${S.jail&&q.t==='jail'?'拘留所 ':''}${i}マス目`;
+  $('evimg').innerHTML=vis('events',q.t==='m'?q.k:SQK(q.t),'','card');
+  $('evt').textContent=`${ICON[q.t]||''} ${q.n||'マス'}`;
+  $('evs').textContent=STORY+NOTE+HOSP;
+  $('evd').textContent=dm?`${dm>0?'+':''}${fmt(dm)}`:'';
+  const st=$('evst');st.innerHTML='';
+  [[Math.round(dr),'💞 人間関係値',S.bond],[Math.round(dh),'❤️ 健康値',S.hp]].forEach(([d,t,v])=>{if(d){const row=document.createElement('div');row.style.color=d>0?'#2f9e44':'#e03131';row.innerHTML=`<span>${t}</span>${bar(v,130,v-d)}<b style="min-width:8em;text-align:right">${d>0?'▲':'▼'}${amtWord(d)}</b>`;st.appendChild(row)}});
+  b.innerHTML='';L.filter(m=>m.indexOf('📖')!==0).forEach(m=>{const d=document.createElement('div');d.textContent=m;b.appendChild(d)});
+  e.style.display='flex';animBars(st,450);
+  let done=false;const fin=()=>{if(done)return;done=true;e.style.display='none';res()};
+  e.onclick=fin;if(S.cpu)setTimeout(fin,2200);
+})}
+function aScores(){const m=PL.map(p=>Math.max(0,p.money)),t=m.reduce((x,y)=>x+y,0);return m.map(v=>t>0?Math.min(100,Math.round(v/t*50*m.length)):0)}   // 人数補正：全員が同額ならどの人数でも100Pt。平均の何倍持っているかで決まる（上限100）
+const bcol=v=>`hsl(${(v*1.2).toFixed(0)},72%,44%)`;
+// fr（変化前の値）を渡すと、frからvへバーがにゅっと伸び縮みする
+const bar=(v,w,fr)=>{v=Math.max(0,Math.min(100,v));const an=fr!=null&&Math.abs(Math.max(0,Math.min(100,fr))-v)>=.5;const f=an?Math.max(0,Math.min(100,fr)):v;
+  return `<span class="bar" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(v)}" style="width:${typeof w==='string'?w:(w||56)+'px'}"><i style="width:${f.toFixed(1)}%;background:${bcol(f)}"${an?` data-to="${v.toFixed(1)}" data-up="${v>f?1:0}"`:''}></i></span>`};
+function animBars(root,delay){const els=(root||document).querySelectorAll('.bar i[data-to]');if(!els.length)return;
+  void document.body.offsetWidth;
+  els.forEach(i=>{const to=+i.dataset.to,up=i.dataset.up==='1';i.removeAttribute('data-to');i.classList.add('anim',up?'bup':'bdn');
+    setTimeout(()=>{i.style.width=to+'%';i.style.background=bcol(to);setTimeout(()=>i.classList.remove('anim','bup','bdn'),1500)},delay==null?250:delay)})}
+const hap=(p,a)=>Math.round((a+p.bond+p.hp)/3*10)/10;
+function endUI(){$('res').classList.remove('hide');$('pcard').classList.add('hide');$('wallet').classList.add('hide');$('roll').classList.add('hide');$('again').classList.remove('hide');$('cardp').classList.add('hide')}
+function end(){
+  const A=aScores(),R=PL.map((p,i)=>({p,a:A[i],h:hap(p,A[i])})).sort((x,y)=>y.h-x.h);
+  $('res').innerHTML='<b>🏆 最終結果（幸福値ランキング）</b><br>'+R.map((r,i)=>`${i+1}位 ${avHTML(r.p,'28px')} ${esc(r.p.name)}${r.p.cpu?'🤖':''}<br><small>　幸福値 ${bar(r.h,150)}<br>　資産総額 ${fmt(r.p.money)}${r.p.money<0?`（約束手形${Math.ceil(-r.p.money/10)}枚）`:''}（資産${r.a}Pt）／${r.p.job||'未定'}${r.p.job0&&r.p.job0!==r.p.job?'（元：'+r.p.job0+'）':''}${r.p.role?' '+ROLES[r.p.role].e+ROLES[r.p.role].n:''}<br>　人間関係値 ${bar(r.p.bond,90)}　健康値 ${bar(r.p.hp,90)}</small>`).join('<br>');
+  if(NET.on)NET.res=$('res').innerHTML;endUI();
+  log('🎉 全員ゴール！ 幸福値ランキングを発表します','#d9480f',1);if(NET.on)doSync();
+}
+function pick(j){if(REGIME){S.job0=j;S.job=regJob(S)}else S.job=j;S.choosing=false;setMap(S.job);log(`✅ 「${j}」を選択！ここから${j}の人生が始まります`,'green');render()}
+const humans=()=>PL.filter(p=>!p.cpu).length;
+function handoff(){return new Promise(res=>{$('hav').innerHTML=avHTML(S,'120px');$('hn').textContent=`${S.name} さんの番です`;$('hand').style.display='flex';$('hb').onclick=()=>{$('hand').style.display='none';res()}})}
+async function after(){
+  if(PL.every(p=>p.done)){end();return}
+  let nx,wr=0;do{if(cur+1>=PL.length)wr++;cur=(cur+1)%PL.length;nx=PL[cur];if(!nx.done&&nx.skip>0){nx.skip--;S=nx;log(`🚔 勾留中でお休み（あと${nx.skip}回）`,'crimson');nx=null}}while(!nx||nx.done);
+  PL.forEach(syncW);
+  if(wr){ROUND+=wr;await newRound()}
+  S=PL[cur];PD[S.id]={b:0,h:0};setMap(S.job);render();
+  if(S.cpu){await sleep(600);return play()}
+  if(!NET.on&&humans()>1)await handoff();
+  $('roll').disabled=false;busy=false;netSync();
+}
+async function play(){
+  settle();busy=true;$('roll').disabled=true;
+  S=PL[cur];setMap(S.job);render();
+  if(S.jail){await jailTurn();await sleep(S.cpu?300:0);await after();return}
+  TRAPS=TRAPS.filter(t=>t.own!==S.id);
+  TURNN='';await turnStart();
+  if(S.cpu)await cpuCards(S);
+  await officerPlace(S);
+  let d=await spin();const from=S.pos;
+  if(S.dbl){S.dbl=0;d*=2;log(`🎲 ダブルダイス！ 出目が2倍になって${d}マス進む`,'#d9480f')}
+  let to=Math.min(N-1,from+d);
+  let stop;
+  for(const m of MAND.filter(m=>m>from&&m<=to)){
+    if(SQ[m]&&SQ[m].k==='marry'&&S.engTo!=null&&!S.seen[m]&&await pickPass(S,m)){S.seen[m]=1;finalizeEng(S,PL[S.engTo],false);log('💍 結婚マスを1マスとして通過した');continue}
+    stop=m;break}
+  if(stop!==undefined){if(stop<to)log(`⛔ 強制ストップ！${stop}マス目で止まります`,'#d9480f');to=stop}
+  S.turn++;log(`🎡 ${d}が出た`);
+  for(let p=from+1;p<=to;p++){S.pos=p;render();beep(480+(p%6)*45,.06,'triangle',.07);await sleep(S.cpu?150:280);
+    if(p<to&&SQ[p]&&SQ[p].t==='p'){const g=add(SQ[p].a);log(`💴 給料日マス（${p}マス目）を通過！ 給料：+${fmt(g)}`,'green');TURNN+=`給料日マスを通り過ぎ、給料${fmt(g)}が振り込まれた。`;payBonus(S,SQ[p].a);beep(900,.12,'triangle',.08);if(!S.cpu)toast(`💴 給料日マスを通過！ +${fmt(g)}`);render();await walletTick(true)}
+    if(SHOPSET.has(p-1)){await visitShop(S);render();await walletTick(true)}}
+  log(`→ ${to}マス目「${SQ[to].n}」`);
+  CAP=[];STORY='';HOSP='';NOTE=TURNN?TURNN+' ':'';TURNN='';const m0=S.money,b0=S.bond,h0=S.hp;meet();land(SQ[to],to);const L=CAP;CAP=null;if(ROUL){const R=ROUL;ROUL=null;await showRoulette(R)}render();
+  await showEvent(SQ[to],to,L,S.money-m0,S.bond-b0,S.hp-h0);
+  await walletTick(true);
+  if(PEND.length){await runPend();render();await walletTick(true)}
+  if(to===N-1){S.done=true;const rk=++fin,b=[300,200,100][rk-1]||0;S.money+=b;fanfare(4);log(`🏁 ゴール！${rk}着${b?`（ゴールボーナス +${fmt(b)}）`:''}`,'#d9480f');render();await walletTick(true)}
+  if(S.choosing){if(S.cpu)pick(JL()[Math.floor(Math.random()*JL().length)]);else{busy=false;return}}
+  await sleep(S.cpu?300:0);
+  await after();
+}
+
+// ===== カード＆ショップ =====
+const CCAT={boost:{n:'ブースト',col:'#fcc419',e:'🟡'},trap:{n:'トラップ',col:'#9775fa',e:'🟣'},rescue:{n:'レスキュー',col:'#51cf66',e:'🟢'}};
+const CLIFE=5,HANDMAX=3,CPRICE={boost:40,trap:60,rescue:50};
+const CD={
+ double:{cat:'boost',n:'ダブルダイス',e:'🎲',d:'次のルーレットの出目が2倍になる',w:1},
+ pin:{cat:'boost',n:'ピンポイントナビ',e:'🧭',d:'次のルーレットの出目を好きな数字に指定できる',w:1},
+ lobby:{cat:'boost',n:'ロビー活動',e:'📢',d:'次の大統領選挙で3票分の投票権を得る',w:1},
+ hard:{cat:'boost',bad:1,n:'人生ハードモード',e:'🌪',d:'【害】使うと、次の出目が前方のマイナスマス（病気・出費など）にしか止まらない値になる',w:.7},
+ nonpoli:{cat:'boost',bad:1,n:'ノンポリ宣言',e:'🤐',d:'【害】使うと、次の大統領選挙での投票権（1票）を失う',w:.7},
+ steal:{cat:'trap',n:'カード奪取',e:'🃏',d:'相手の手札を裏返しのまま1枚引き抜く。使うと関係性が下がる',w:1},
+ infect:{cat:'trap',n:'デバフ感染',e:'🦠',d:'自分のヤニ／アル中を相手に擦り付ける。使うと関係性が下がる',w:1},
+ sabo:{cat:'trap',bad:1,nouse:1,n:'サボりマン',e:'🛋',d:'【害】持っているだけで収入が半額に。自分では使えない（誰かに奪わせよう）',w:.7},
+ bakuro:{cat:'trap',bad:1,n:'暴露自爆',e:'💣',d:'【害】他人の秘密を暴くつもりが、自分の隠し口座も発覚。所持金と人間関係が大きく減る',w:.7},
+ cure:{cat:'rescue',n:'ヤミ医者の処方箋',e:'💊',d:'今の病気が完治する',w:1},
+ quit:{cat:'rescue',n:'禁煙宣言',e:'🚭',d:'ヤニかす・アル中のデバフを消す',w:1},
+ ins:{cat:'rescue',n:'高額医療保険',e:'🛡',d:'6ターンの間、通院代が免除される',w:1},
+ over:{cat:'rescue',bad:1,n:'ヤミ医者の過剰治療',e:'🧪',d:'【害】病気もデバフも全部消えるが、高額な治療費で所持金が0円になる',w:.7},
+ suppl:{cat:'rescue',bad:1,n:'怪しいサプリ',e:'🧴',d:'【害】健康値が10回復するが、副作用でヤニかす／アル中のどちらかが付く',w:.7}};
+const hasC=(p,id)=>!!(p.cards&&p.cards.some(c=>c.id===id));
+const isNeg=q=>!!q&&['l','t','a','h'].includes(q.t);
+function drawCard(badP){if(badP&&Math.random()<badP){const bs=Object.keys(CD).filter(k=>CD[k].bad);return bs[Math.floor(Math.random()*bs.length)]}
+  const ks=Object.keys(CD),tot=ks.reduce((a,k)=>a+CD[k].w,0);let r=Math.random()*tot;for(const k of ks){r-=CD[k].w;if(r<=0)return k}return ks[0]}
+const cName=id=>`【${CD[id].n}】`;
+const others=p=>PL.filter(o=>o!==p&&!o.done&&!o.jail);
+function canUse(p,c){const d=CD[c.id];if(d.nouse)return false;
+  switch(c.id){
+    case 'steal':return others(p).some(o=>o.cards.length>0);
+    case 'infect':return others(p).some(o=>(p.deb.tar&&!o.deb.tar)||(p.deb.alc&&!o.deb.alc));
+    case 'cure':return !!p.sick;
+    case 'quit':return !!(p.deb.tar||p.deb.alc);
+    case 'ins':return !(p.ins>0);
+    case 'lobby':return !p.lobby;
+    case 'double':return !p.dbl&&!p.pin;
+    case 'pin':return !p.pin&&!p.dbl;
+  }return true}
+function cpuPin(p){const mx=rollMax(p),sc={g:3,G:6,u:1,x:1,r:1,f:1,h:-1,l:-3,t:-3,a:-4,k:1};let best=[],bv=-99;
+  for(let d=1;d<=mx;d++){const q=SQ[Math.min(N-1,p.pos+d)],v=(q&&sc[q.t])||0;if(v>bv){bv=v;best=[d]}else if(v===bv)best.push(d)}
+  return best[Math.floor(Math.random()*best.length)]}
+async function pickTarget(p,list,human,title){
+  if(!list.length)return null;
+  if(!human)return list[Math.floor(Math.random()*list.length)];
+  const i=await ask(title,'相手を選んでください。',list.map(o=>`${o.name}（手札${o.cards.length}枚）`).concat('やめる'));
+  return i>=list.length?false:list[i]}
+function trapCost(p,t){chg(-3,0,p);if(t&&relOf(p,t))relAdd(p,t,-3,true)}
+async function receive(p,c,from){   // 奪った・受け取ったカード：害カードは即座に効果が出る
+  const d=CD[c.id];
+  if(d.bad&&!d.nouse){log(`💀 奪った${cName(c.id)}は害カードだった！ 即座に効果が出る`,'crimson');
+    return '【ババを引いた！】'+await CE[c.id](p,false,'forced')}
+  if(d.nouse){p.cards.push(c);log(`💀 奪ったのは${cName(c.id)}！ 持っているだけで収入が半額になる`,'crimson');return '【ババを引いた！】'+d.n+'を手札に抱えてしまった…'}
+  p.cards.push(c);return ''}
+const CE={
+ async double(p){p.dbl=1;log('🎲 ダブルダイス！ 次のルーレットの出目が2倍になる','#d9480f');return '次のルーレットの出目が2倍になる！'},
+ async pin(p,h){let v;const mx=rollMax(p);
+   if(h){const i=await ask('🧭 ピンポイントナビ','次のルーレットの出目を指定します。前方のマスを見て決めましょう。',Array.from({length:mx},(_,k)=>{const q=SQ[Math.min(N-1,p.pos+k+1)];return `${k+1}　→ ${(ICON[q.t]||'')} ${q.n||''}`}).concat('やめる'));
+     if(i>=mx)return false;v=i+1}
+   else v=cpuPin(p);
+   p.pin=v;log(`🧭 ピンポイントナビ！ 次の出目は「${v}」に決定`,'#d9480f');return `次の出目が「${v}」に決まった！`},
+ async lobby(p){p.lobby=1;log('📢 ロビー活動！ 次の大統領選挙で3票分の投票権を得た','#7048e8');return '次の大統領選挙で3票分の発言力を得た！'},
+ async hard(p){p.hard=1;log('🌪 人生ハードモード！ 次の出目はマイナスマスに向かう…','crimson');return '次のルーレットは、前方のマイナスマスにしか止まれなくなる…'},
+ async nonpoli(p){p.novote=1;log('🤐 ノンポリ宣言… 次の大統領選挙では投票できない','crimson');return '次の大統領選挙での投票権を失った…'},
+ async steal(p,h,mode){
+   const T=others(p).filter(o=>o.cards.length);
+   if(!T.length){return mode==='forced'?'奪える相手がおらず、不発に終わった。':false}
+   const t=await pickTarget(p,T,h,'🃏 カード奪取：誰から奪う？');if(t===false)return false;
+   const order=t.cards.map((c,i)=>i).sort(()=>Math.random()-.5);
+   let k=0;
+   if(h){k=await ask('🃏 どれを引く？',`${t.name}の手札は裏返しです（色だけ見えます）。害カード＝ババが混ざっているかも…`,order.map(i=>{const d=CD[t.cards[i].id];return `${CCAT[d.cat].e} 裏向きの${CCAT[d.cat].n}カード`}))}
+   else k=Math.floor(Math.random()*order.length);
+   const c=t.cards.splice(order[k],1)[0];
+   trapCost(p,t);log(`🃏 ${t.name}の手札から1枚奪った！（関係性が下がった）`,'#7048e8');
+   const r=await receive(p,c,t);
+   return `${t.name}から${r?'':cName(c.id)+'を'}1枚奪い取った！`+(r?'\n'+r:'')+'\n（奪うと関係性が下がる）'},
+ async infect(p,h,mode){
+   const T=others(p).filter(o=>(p.deb.tar&&!o.deb.tar)||(p.deb.alc&&!o.deb.alc));
+   if(!T.length)return mode==='forced'?'擦り付ける相手がおらず、不発に終わった。':false;
+   const t=await pickTarget(p,T,h,'🦠 デバフ感染：誰に擦り付ける？');if(t===false)return false;
+   const ks=['tar','alc'].filter(k=>p.deb[k]&&!t.deb[k]),k=ks[Math.floor(Math.random()*ks.length)];
+   p.deb[k]=0;t.deb[k]=1;trapCost(p,t);
+   const nm=k==='tar'?'ヤニかす':'アル中';log(`🦠 ${nm}を${t.name}に擦り付けた！`,'#7048e8');return `${nm}を${t.name}に擦り付けた！（関係性が下がった）`},
+ async bakuro(p){const x=p.money>0?Math.max(10,lp(p.money,.25)):0;if(x>0)p.money-=x;chg(-12,0,p);
+   log(`💣 暴露自爆！ 自分の隠し口座まで発覚して${x>0?'-'+fmt(x):''}`,'crimson');return `他人のスキャンダルを暴くはずが、自分の隠し口座まで発覚！ ${x>0?fmt(x)+'を失い、':''}人間関係も大きく傷ついた。`},
+ async cure(p,h,mode){if(!p.sick)return mode==='forced'?'治す病気がなく、効き目はなかった。':false;const n=p.sick.n;p.sick=null;log(`💊 ヤミ医者の処方箋で${n}が完治！`,'green');return `${n}が完治した！`},
+ async quit(p,h,mode){if(!(p.deb.tar||p.deb.alc))return mode==='forced'?'消すデバフがなく、気持ちだけが引き締まった。':false;p.deb.tar=0;p.deb.alc=0;log('🚭 禁煙宣言！ デバフがすべて消えた','green');return 'ヤニかす・アル中がすべて消えた！'},
+ async ins(p){p.ins=6;log('🛡 高額医療保険に加入！ 6ターン通院代が免除','green');return '6ターンの間、通院代が免除される！'},
+ async over(p){const had=p.sick?p.sick.n:'';p.sick=null;p.deb.tar=0;p.deb.alc=0;const x=p.money>0?p.money:0;if(x>0)p.money=0;
+   log(`🧪 ヤミ医者の過剰治療！ 病気もデバフも消えたが${x>0?fmt(x)+'を請求された':'請求書だけが残った'}`,'crimson');return `病気とデバフはすべて消えたが、法外な治療費で${x>0?fmt(x)+'を巻き上げられ、所持金が0円になった。':'請求書が届いた。'}`},
+ async suppl(p){p.hp=cl(p.hp+10);pdAdd(p,'h',10);const k=Math.random()<.5?'tar':'alc';p.deb[k]=1;
+   log(`🧴 怪しいサプリ！ 健康値は上がったが副作用で${k==='tar'?'ヤニかす':'アル中'}に`,'crimson');return `健康値が回復したが、副作用で${k==='tar'?'ヤニかす':'アル中'}になってしまった…`}
+};
+async function useCard(p,idx,mode){   // mode: human / cpu / forced
+  const c=p.cards[idx];if(!c)return false;
+  p.cards.splice(idx,1);
+  const msg=await CE[c.id](p,mode==='human',mode);
+  if(msg===false){p.cards.splice(idx,0,c);return false}
+  return msg}
+async function cardTick(p){
+  if(!p.cards.length)return false;let money=false;
+  p.cards.forEach(c=>c.left--);
+  for(const c of p.cards.slice()){
+    if(c.left>0)continue;const i=p.cards.indexOf(c);if(i<0)continue;const d=CD[c.id];let msg;
+    if(d.nouse){p.cards.splice(i,1);const x=p.money>0?Math.max(10,lp(p.money,.12)):0;if(x>0){p.money-=x;money=true}
+      msg=`${d.n}は誰にも奪われないまま保有期限切れ！ 強制破棄され、${x>0?'罰金'+fmt(x)+'を取られた…':'後始末に追われた…'}`}
+    else{const m0=p.money;msg=await useCard(p,i,'forced');if(msg===false)msg='不発に終わった。';if(p.money!==m0)money=true}
+    log(`⏰ ${cName(c.id)}の保有期限！ ${msg.replace(/\n/g,' ')}`,'#d9480f');
+    render();
+    if(!p.cpu)await ask('⏰ カードの保有期限が切れた！',`${cName(c.id)}\n${msg}`,['OK'],p);
+  }
+  return money}
+async function cpuCards(p){
+  for(const c of p.cards.slice()){const d=CD[c.id];if(d.nouse||d.bad||!canUse(p,c))continue;
+    let go=false;
+    switch(c.id){case 'double':go=Math.random()<.5&&p.pos<N-15;break;case 'pin':go=Math.random()<.5;break;case 'lobby':go=true;break;
+      case 'steal':go=Math.random()<.5;break;case 'infect':case 'cure':case 'quit':go=true;break;case 'ins':go=!!p.sick;break}
+    if(!go)continue;const i=p.cards.indexOf(c);if(i<0)continue;
+    const m=await useCard(p,i,'cpu');if(m!==false){render();await sleep(500)}}}
+let cuBusy=false;
+async function humanUse(i){
+  if(busy||cuBusy||!S||S.cpu||S.choosing||S.jail||(!NET.on&&$('roll').disabled))return;
+  if(NET.on&&!NET.host){netSendHost({t:'act',a:'use',i});return}
+  if(!mine())return;
+  const c=S.cards[i];if(!c||!canUse(S,c))return;
+  cuBusy=true;busy=true;
+  try{
+    if(CD[c.id].bad){const a=await ask('⚠ 害カードを使いますか？',`${cName(c.id)}\n${CD[c.id].d}`,['それでも使う','やめる']);if(a!==0)return}
+    const m0=S.money,msg=await useCard(S,i,'human');
+    if(msg!==false){beep(660,.12,'triangle',.08);render();await ask(`${CD[c.id].e} ${CD[c.id].n}を使った！`,msg,['OK']);render();if(S.money!==m0)await walletTick(true)}
+  }finally{busy=false;cuBusy=false;render()}}
+function renderCards(){
+  const el=$('cardp');if(!el||!PL[cur])return;
+  if(NET.on){const me=PL[NET.me];if(!me)return;const my=mine()&&!busy;
+    let h=`<div class="cph"><b>🃏 ${esc(me.name)}（あなた）の手札（${me.cards.length}/${HANDMAX}）</b><small>残りターンが0になると強制発動</small></div><div class="cps">`;
+    for(let i=0;i<HANDMAX;i++){const c=me.cards[i];
+      if(!c){h+='<div class="ct empty">空き</div>';continue}
+      const d=CD[c.id],ct=CCAT[d.cat],ok=my&&!me.jail&&!me.cpu&&canUse(me,c);
+      h+=`<div class="ct${d.bad?' bad':''}" style="border-color:${ct.col}"><div class="cn">${vis('cards',c.id,d.e,'ico')} ${d.n}</div><div class="cd">${d.d}</div><div class="cl${c.left<=1?' warn':''}">⏳ あと${c.left}ターン</div>`+
+        (d.nouse?'<div class="nou">使用不可（持つだけで効果）</div>':`<button data-ci="${i}"${ok?'':' disabled'}>${ok?'使う':(mine()?'今は使えない':'自分の番に使えます')}</button>`)+'</div>'}
+    h+='</div>'+PL.filter(q=>q!==me).map(q=>`<div class="oh">${avHTML(q,'18px')} <span>${esc(q.name)}</span> ${q.cards.map(c=>{const ct=CCAT[c.cat||(CD[c.id]||{}).cat]||{col:'#888'};return `<i class="cb" style="background:${ct.col}" title="裏向きのカード">🂠</i>`}).join('')||''} <small>${q.cards.length?q.cards.length+'枚（中身は非公開）':'手札なし'}</small></div>`).join('');
+    el.innerHTML=h;return}
+  const p=PL[cur];
+  let h=`<div class="cph"><b>🃏 ${esc(p.name)}の手札（${p.cards.length}/${HANDMAX}）</b><small>残りターンが0になると強制発動</small></div><div class="cps">`;
+  if(p.cpu){h+=Array.from({length:HANDMAX},(_,i)=>`<div class="ct empty">${i<p.cards.length?'🂠 非公開':'—'}</div>`).join('')}
+  else for(let i=0;i<HANDMAX;i++){const c=p.cards[i];
+    if(!c){h+='<div class="ct empty">空き</div>';continue}
+    const d=CD[c.id],ct=CCAT[d.cat],ok=canUse(p,c);
+    h+=`<div class="ct${d.bad?' bad':''}" style="border-color:${ct.col}"><div class="cn">${vis('cards',c.id,d.e,'ico')} ${d.n}</div><div class="cd">${d.d}</div><div class="cl${c.left<=1?' warn':''}">⏳ あと${c.left}ターン</div>`+
+      (d.nouse?'<div class="nou">使用不可（持つだけで効果）</div>':`<button data-ci="${i}"${ok?'':' disabled'}>${ok?'使う':'今は使えない'}</button>`)+'</div>'}
+  $('cardp').innerHTML=h+'</div>'}
+$('cardp').onclick=e=>{const b=e.target.closest('button[data-ci]');if(b&&!b.disabled)humanUse(+b.dataset.ci)};
+// ----- 通り抜けショップ -----
+let SHOPS=[],SHOPSET=new Set();
+function shopRate(p){   // 下位ほど割引（最下位で50%引き）
+  const A=aScores(),r=PL.map((q,i)=>[hap(q,A[i]),q]).sort((a,b)=>b[0]-a[0]).findIndex(x=>x[1]===p);
+  return PL.length>1?.5*r/(PL.length-1):0}
+const cardPrice=(cat,p,rate)=>Math.max(10,r10(CPRICE[cat]*Math.max(1+1.5*prog(p),mp(p))*(1-rate)));
+function shopBuy(p,st,rate,i){const s=st[i];if(!s)return null;const d=CD[s.id],pr=cardPrice(d.cat,p,rate);
+  if(s.sold||st.some(x=>x.sold)||p.cards.length>=HANDMAX||p.money<pr)return null;   // 1回の立ち寄りで購入は最大1枚
+  p.money-=pr;s.sold=1;p.cards.push({id:s.id,left:CLIFE});beep(880,.1,'triangle',.08);
+  log(`🛒 ${cName(s.id)}を購入（${fmt(pr)}）`);
+  return d.bad?`💀 ババを引いた！ ${cName(s.id)}：${d.d}`:`✨ ${cName(s.id)}を手に入れた！`}
+function shopDraw(p,st,rate,note){
+  $('shopt').textContent='🛒 通り抜けショップ';
+  $('shopx').innerHTML=`${esc(p.name)}さんの所持金：<b>${fmt(p.money)}</b>　手札：${p.cards.length}/${HANDMAX}枚<br>${rate>0?`🔖 後方セール：${Math.round(rate*100)}%引き！　`:''}${REGIME?`<b style="color:#c92a2a">${RGN[REGIME].e} ${RGN[REGIME].n}の闇市：害カード（ババ）が極めて高確率で並んでいる！</b>　`:''}カードの中身は全て公開。購入できるのは<b>1回の立ち寄りにつき1枚まで</b>。${note?'<br><b>'+note+'</b>':''}`;
+  $('shopc').innerHTML=st.map((s,i)=>{const d=CD[s.id],ct=CCAT[d.cat],pr=cardPrice(d.cat,p,rate),any=st.some(x=>x.sold),dis=s.sold||any||p.cards.length>=HANDMAX||p.money<pr;
+    return `<div class="shi" style="border-color:${d.bad?'#c92a2a':ct.col}${d.bad?';background:#fff0f0':''}"><div class="shc">${ct.e} ${ct.n}${d.bad?' 💀害':''}</div><div class="shq on">${d.e}<br>${d.n}</div><div class="shd" style="font-size:11px;line-height:1.35;margin:4px 0;min-height:4.2em">${esc(d.d)}</div><div class="shp">${s.sold?'購入済み':fmt(pr)}</div>${s.sold?'':`<button data-i="${i}"${dis?' disabled':''}>${any?'今回は購入済み':p.cards.length>=HANDMAX?'手札がいっぱい':p.money<pr?'お金が足りない':'買う'}</button>`}</div>`}).join('');
+  $('shopm').classList.add('on')}
+function shopClose(){$('shopm').classList.remove('on');$('shopc').onclick=null;$('shopok').onclick=null}
+function visitShop(p){
+  const st=[0,1,2].map(()=>({id:drawCard(REGIME?.8:0),sold:0})),rate=shopRate(p);
+  log(`🛒 通り抜けショップに立ち寄った${rate>0?`（後方セール${Math.round(rate*100)}%引き）`:''}`);
+  if(p.cpu){st.forEach(s=>{const pr=cardPrice(CD[s.id].cat,p,rate);
+      if(!st.some(x=>x.sold)&&p.cards.length<HANDMAX&&p.money>=pr*3&&Math.random()<.45&&!(CD[s.id].bad&&Math.random()<.85)){p.money-=pr;s.sold=1;p.cards.push({id:s.id,left:CLIFE});log(`🛒 カードを購入（${fmt(pr)}）`)}});return Promise.resolve()}
+  if(rem(p)){   // 他の端末のプレイヤー：ショップ画面はその端末に表示。購入はホストが処理
+    return new Promise(res=>{NET.shop={p,st,rate,res};NET.wait=p.id;doSync();netSendTo(NET.conns[p.own],{t:'shop',pid:p.id,st,rate})})}
+  return new Promise(res=>{
+    $('shopc').onclick=e=>{const b=e.target.closest('button[data-i]');if(!b||b.disabled)return;
+      const r=shopBuy(p,st,rate,+b.dataset.i);if(r===null)return;render();shopDraw(p,st,rate,r)};
+    $('shopok').onclick=()=>{shopClose();res()};
+    shopDraw(p,st,rate,'')})}
+
+
+// ===== 人間関係・健康マスの専用ルーレット（10項目：良い／悪い出来事と、その増減幅）=====
+// [文章, 増減（＋は上がる／−は下がる。大きいほど「とっても」）]
+const VP={
+ h:{g:[['ジムで汗を流して体が軽くなった！',8],['温泉旅行でゆっくり休養した。心も体も回復！',12],['健康診断で数値が改善！ 生活習慣を見直した。',6],['朝のウォーキングが習慣になった。',3],['ぐっすり眠れて朝から絶好調！',4],['フルマラソンを完走！ 体力に自信がついた。',10],['野菜中心の食事に変えたら体が軽い。',5],['整体で肩こりがすっきりした。',2]],
+    b:[['風邪をひいて寝込んでしまった…',-8],['ストレスで胃がキリキリ。働きすぎかも…',-10],['ケガをして通院することに…',-12],['寝不足でぼんやり。体が重い…',-3],['階段で足首をひねってしまった…',-4],['インフルエンザで高熱が出た…',-13],['腰を痛めて動けない…',-9],['花粉症で目も鼻もボロボロ…',-2]]},
+ hs:{g:[['体育祭で大活躍！ 体力がついた。',8],['毎朝のジョギングが習慣になった。',7],['部活で鍛えられて足腰が強くなった。',8],['早寝早起きで体調バッチリ！',4],['給食をしっかり食べて元気いっぱい。',3],['水泳大会で自己ベストを更新！',10],['友達と放課後に公園で遊び回った。',5],['保健室の先生に健康の話を聞いた。',2]],
+    b:[['夜更かしして授業中に居眠り。体調がイマイチ…',-7],['部活の練習で足をひねってしまった…',-9],['テスト前の徹夜で風邪をひいた…',-8],['お菓子ばかり食べてお腹をこわした…',-4],['体育でケガをしてしまった…',-11],['寝坊して朝ごはん抜きでフラフラ…',-3],['運動不足で階段だけで息切れ…',-4],['インフルエンザで学級閉鎖に…',-12]]},
+ r:{g:[['友人たちと楽しい飲み会！ 絆が深まった。',8],['実家に帰って家族団らん。心が温まった。',10],['同窓会で旧友と再会！ 話が尽きなかった。',8],['同僚からランチに誘われた。',3],['SNSで共通の趣味の仲間と盛り上がった。',4],['友人の引っ越しを手伝って感謝された！',6],['久しぶりの電話で近況を語り合った。',4],['近所の人とお裾分けを交換した。',2]],
+    b:[['ちょっとした行き違いで友人とケンカしてしまった…',-8],['忙しくて連絡を返せず、疎遠になってしまった…',-10],['大事な記念日をうっかり忘れて、怒られた…',-12],['グループの会話に入れず、ちょっと寂しい…',-3],['約束に遅刻して白い目で見られた…',-4],['陰口を言われているのを聞いてしまった…',-9],['貸したものが返ってこない…',-5],['SNSの発言が炎上して距離を置かれた…',-13]]},
+ rs:{g:[['クラスの友達とお弁当を囲んで盛り上がった！',6],['部活の仲間と全国大会を目指して一致団結！',9],['文化祭でクラスが一つになった！ 最高の思い出。',10],['放課後に友達とゲームセンターへ！',4],['友達に勉強を教えて感謝された。',5],['席替えで仲良しの隣になった！',3],['修学旅行の夜、恋バナで盛り上がった。',8],['先輩に優しくされて憧れた。',2]],
+    b:[['友達と些細なことでケンカして、気まずい…',-8],['グループLINEで既読スルー。距離ができてしまった…',-7],['勇気を出して告白したけど、振られてしまった…',-10],['クラス替えで仲良しと離れ離れに…',-6],['悪口を言われた気がして落ち込む…',-5],['発表で失敗して笑われた…',-4],['友達との約束をうっかり忘れた…',-3],['いじりがエスカレートして嫌な思いをした…',-9]]}};
+const pickN=(a,n)=>shuf(a.slice(),Math.random).slice(0,n);
+let ROUL=null;
+function mkRoul(kind,st,pg){   // pg＝良い出来事になる確率（従来どおり）。10項目中の「良い項目」の数で確率を再現
+  const P=VP[kind+(st?'s':'')],x=pg*10;let ng=Math.floor(x)+(Math.random()<x-Math.floor(x)?1:0);ng=Math.max(1,Math.min(8,ng));
+  const items=shuf(pickN(P.g,ng).concat(pickN(P.b,10-ng)),Math.random),idx=Math.floor(Math.random()*10);
+  return{kind,items,idx}}
+const rvalue=(kind,d)=>kind==='r'?d*bondProg(S)*(d>0&&S.job==='教師'?1.3:1):d;
+async function showRoulette(R){
+  const cpu=S.cpu,items=R.items.map(([t,d])=>({t,d,v:rvalue(R.kind,d)}));
+  $('vrt').textContent=R.kind==='r'?'💞 人間関係ルーレット':'❤️ 健康ルーレット';
+  $('vrs').textContent=cpu?`${S.name}（CPU）の運命は…`:`${S.name}さんの運命は…？`;$('vrr').textContent='';
+  const wd=it=>amtWord(Math.round(it.v)||it.d);
+  $('vrst').innerHTML=items.map((it,i)=>`<div class="vrw ${it.d>0?'up':'dn'}" data-i="${i}"><span class="vn">${i+1}</span><span class="vt">${esc(it.t)}</span><b class="vw">${it.d>0?'▲':'▼'}${wd(it)}</b></div>`).join('');
+  $('vroul').classList.add('on');$('vrw').classList.remove('tense');
+  const rr=[...($('vrst').children||[])],rows=Array.from({length:10},(_,i)=>rr[i]||{classList:{add(){},remove(){}}});
+  const go=$('vrgo');
+  let cur=-1;const lit=i=>{if(cur>=0)rows[cur].classList.remove('cur');cur=i;rows[i].classList.add('cur')};
+  let pos=Math.floor(Math.random()*10),stopped=!!cpu;
+  if(cpu){go.style.display='none';await sleep(200)}
+  else{go.style.display='block';go.disabled=false;go.textContent='■ ストップ！';go.classList.add('stp');$('vrs').textContent=`${S.name}さんの運命は…？　好きなタイミングでストップ！（15秒で自動停止）`;
+    go.onclick=()=>{stopped=true;go.disabled=true;go.onclick=null};
+    setTimeout(()=>{stopped=true},15000);au()}
+  beep(220,.4,'sawtooth',.05);
+  // ① 自動でぐるぐる回り続ける（人間：ストップが押されるまで）
+  if(!cpu)while(!stopped){lit(pos);beep(700+(pos%5)*70,.05,'square',.07);pos=(pos+1)%10;await sleep(167)}
+  go.style.display='none';
+  if(!cpu)$('vrs').textContent=`${S.name}さんの運命は…！`;
+  // ② ストップ後は徐々に減速し、当たり（先に抽選済み）で止まる
+  const last=cpu?pos:(pos+9)%10,steps=10+((R.idx-last)%10+10)%10;
+  for(let j=1;j<=steps;j++){
+    const i=(last+j)%10,p=j/steps;lit(i);beep(700+(i%5)*70-300*p,.05,'square',.07);
+    if(!cpu&&p>.7){$('vrw').classList.add('tense');if(j%2===0)beep(80,.18,'sine',.12)}
+    if(j<steps)await sleep(cpu?60+Math.pow(p,3)*160:167+Math.pow(p,2.5)*800);
+  }
+  $('vrw').classList.remove('tense');
+  const it=items[R.idx];rows[R.idx].classList.add('win');fanfare(it.d>0?4:2);if(it.d<0)beep(140,.4,'sawtooth',.08);
+  $('vrr').innerHTML=`<span style="color:${it.d>0?'#2f9e44':'#e03131'}">${it.d>0?'▲':'▼'} ${R.kind==='r'?'人間関係値':'健康値'}が${wd(it)}</span>`;
+  await new Promise(res=>{let done=false;const fin=()=>{if(done)return;done=true;res()};$('vroul').onclick=fin;setTimeout(fin,cpu?600:2200)});
+  $('vroul').onclick=null;$('vroul').classList.remove('on')}
+
+
+// ===== 拘留所マップ（逮捕されると通常マップを離れて15マスの拘留所へ） =====
+const JAIL=[
+ {k:'in',n:'入所',e:'🚔',tx:'ここがスタート',say:'ここが拘留所の入口だ。'},
+ {k:'work',n:'刑務作業',e:'🧵',tx:'+2,000円',m:20,say:'刑務作業に精を出し、わずかな作業報奨金をもらった。'},
+ {k:'yard',n:'運動の時間',e:'🏃',tx:'健康が少し回復',h:2,say:'中庭で運動の時間。体を動かして少し気分が晴れた。'},
+ {k:'solo',n:'独房',e:'🔒',tx:'1マス目へ強制送還',say:'規律違反で問題を起こしてしまった…！ 独房に入れられ、最初のマスからやり直しだ。'},
+ {k:'visit',n:'面会',e:'👥',tx:'人間関係が少し回復',b:2,say:'家族が面会に来てくれた。ガラス越しの会話に心が温まる。'},
+ {k:'meal',n:'食事',e:'🍙',tx:'健康が少し回復',h:1,say:'規則正しい三食。質素だが、体調は整っていく。'},
+ {k:'model',n:'模範囚',e:'🏅',tx:'即・釈放！',say:'日頃の態度が認められ「模範囚」として即釈放されることになった！'},
+ {k:'work',n:'刑務作業',e:'🧵',tx:'+3,000円',m:30,say:'黙々と作業を続け、少しだけ多めの報奨金をもらった。'},
+ {k:'solo',n:'独房',e:'🔒',tx:'1マス目へ強制送還',say:'ささいな口論が問題になり、独房へ…！ 最初のマスからやり直しだ。'},
+ {k:'read',n:'読書の時間',e:'📖',tx:'人間関係が少し回復',b:2,say:'図書の時間。本を読んで、人との付き合い方を見つめ直した。'},
+ {k:'yard',n:'運動の時間',e:'🏃',tx:'健康が少し回復',h:2,say:'仲間とキャッチボール。久しぶりに笑った。'},
+ {k:'model',n:'模範囚',e:'🏅',tx:'即・釈放！',say:'反省の態度が評価され「模範囚」として即釈放が決まった！'},
+ {k:'solo',n:'独房',e:'🔒',tx:'1マス目へ強制送還',say:'夜中に騒いでしまい問題行動と見なされた…！ 独房を経て最初のマスへ戻される。'},
+ {k:'gift',n:'差し入れ',e:'🎁',tx:'+5,000円',m:50,say:'差し入れが届いた！ ささやかな臨時収入になった。'},
+ {k:'exit',n:'出口',e:'🚪',tx:'釈放！',say:'刑期を終えて出口にたどり着いた。娑婆の空気がうまい！'}];
+const JMAX=JAIL.length-1;
+function jailHTML(){
+  const pl=PL[cur],J1=pl.jail,inJ=PL.filter(o=>o.jail);
+  const cell=i=>{const q=JAIL[i];return `<div class="jc ${q.k}" style="order:${i<5?i:i<10?14-i+0:i}"><small>${i+1}</small><b>${q.e} ${q.n}</b><span>${q.tx}</span><div class="jt">${inJ.filter(o=>o.jail.pos===i).map(o=>`<span class="${o===pl?'me':''}" title="${esc(o.name)}">${avHTML(o,'26px')}</span>`).join('')}</div></div>`};
+  let g='';for(let i=0;i<15;i++)g+=cell(i);
+  return `<div class="jh"><b>🔒 拘留所（全15マス）</b><span>${esc(pl.name)}：${J1.pos+1} / 15 マス目・拘留${J1.t}ターン目</span></div><div class="jg2">${g}</div><div class="jn">🏅模範囚マスに止まれば即釈放（元のマスへ復帰・復帰先の効果なし）／🔒独房マスは「問題を起こした」として1マス目へ強制送還／出口まで進んでも釈放。拘留中は祝儀・寄付・カード奪取などの他プレイヤーとのやり取りの対象外です。</div>`}
+function release(p,why){
+  const from=p.from??p.jail.from;p.jail=null;
+  log(`🔓 ${why}で釈放！ 元の${p.pos}マス目に戻り、次の番から通常ゲームに復帰`,'green');
+  if(!p.cpu)toast(`🔓 釈放！ ${p.pos}マス目から再スタート`)}
+async function jailTurn(){
+  const p=S,J1=p.jail;J1.t++;
+  if(J1.t>14){release(p,'刑期満了');render();return}
+  const n=await spin(),d=Math.max(1,Math.ceil(n*3/rollMax(p)));
+  log(`🎡 ${n}が出た → 拘留所で${d}マス進む`);
+  for(let k=0;k<d&&J1.pos<JMAX;k++){J1.pos++;render();beep(420+k*60,.06,'triangle',.07);await sleep(p.cpu?150:300)}
+  const at=J1.pos,q=JAIL[at];
+  CAP=[];STORY='';HOSP='';NOTE='';const m0=p.money,b0=p.bond,h0=p.hp;
+  log(`→ 拘留所 ${at+1}マス目「${q.n}」`);say(q.say);
+  let out=null;
+  if(q.k==='exit')out='出口に到達';else if(q.k==='model')out='模範囚';
+  else if(q.k==='solo'){J1.pos=0;log('🔒 独房！ 拘留所の1マス目へ強制送還','crimson')}
+  else{
+    if(q.m){const g=add(q.m,true);log(`💴 ${q.n}：+${fmt(g)}`,'green')}
+    if(q.h){p.hp=cl(p.hp+q.h);pdAdd(p,'h',q.h);log(`❤️ 健康値が${amtWord(q.h)}`,'green')}
+    if(q.b)chg(q.b,0,p,true)}
+  const L=CAP;CAP=null;render();
+  await showEvent({t:'jail',n:`${q.e} ${q.n}`},at+1,L,p.money-m0,p.bond-b0,p.hp-h0);
+  await walletTick(true);
+  if(out){release(p,out);render()}
+}
+
+// ===== 職業選択（2段階：プレイスタイル → 該当職業から決定）=====
+const JSTY=[
+ {c:0,e:'🧭',t:'マジメにしっかり',s:'手堅く安定。収入はゆるやかだが、リスクが低い（警察官・税務官・教師・看護師・薬剤師・運送ドライバー・建設作業員）'},
+ {c:1,e:'💪',t:'実力でメキメキ',s:'修行や経験で実力が伸び、収入が大きく上がる（経営者・プロスポーツ選手・漫画家・投資家）'},
+ {c:2,e:'🎰',t:'ディープにがっぽり',s:'高収入だが、重い税金・摘発・炎上などのリスクも（ホスト・キャバ嬢・配信者・転売ヤー）'}];
+let JSEL=null;
+function jobStep1(){JSEL=null;
+  $('jl').innerHTML=`<h3>👔 職業を選ぼう</h3><div class="jpn">まずは、これからの人生の方針を選んでください。</div><div class="jst">`+
+    JSTY.map(x=>`<button data-sty="${x.c}">${x.e} ${x.t}<small>${x.s}</small></button>`).join('')+'</div>'}
+function jobStep2(c){JSEL=null;const x=JSTY[c];
+  $('jl').innerHTML=`<h3>${x.e} ${x.t}</h3><div class="jpn">なりたい職業をタップして、「この職業に決定」を押してください。</div><div class="jjl">`+
+    JL().filter(k=>J[k].c===c).map(k=>`<button class="jj" data-j="${k}"><b>${jobIcon(k)} ${k}</b><small>${J[k].d}</small><small class="trc">${traitChips(k).join(' ／ ')}</small></button>`).join('')+
+    `</div><div class="jpb"><button class="bk" data-back="1">← 戻る</button><button id="jgo" disabled>この職業に決定</button></div>`}
+jobStep1();
+$('jl').onclick=e=>{
+  const st=e.target.closest('button[data-sty]');if(st){jobStep2(+st.dataset.sty);return}
+  if(e.target.closest('[data-back]')){jobStep1();return}
+  const jb=e.target.closest('button.jj');
+  if(jb){JSEL=jb.dataset.j;document.querySelectorAll('#jl button.jj').forEach(b=>b.classList.toggle('sel',b===jb));const g=$('jgo');if(g){g.disabled=false;g.textContent=`「${JSEL}」に決定`}return}
+  if(e.target.closest('#jgo')&&JSEL){const j=JSEL;jobStep1();
+    $('jobpick').classList.add('hide');if(NET.on&&!NET.host){netSendHost({t:'act',a:'pick',j});return}pick(j);after()}
+};
+$('start').onclick=()=>{
+  const n=parseInt($('cnt').value),specs=[];for(let i=0;i<n;i++)specs.push({name:$('n'+i).value||('P'+(i+1)),cpu:$('t'+i).value==='1',own:null});
+  newGame(specs,$('mode').value,$('seed').value.trim()||String(Math.floor(Math.random()*1e9)),true)};
+function newGame(specs,modeV,sd,kick){
+  const n=specs.length;
+  PL=[];for(let i=0;i<n;i++)PL.push({name:specs[i].name,cpu:!!specs[i].cpu,own:specs[i].own||null,job:null,money:500,pos:0,turn:0,col:COLS[i],done:false,choosing:false,seen:{},skill:0,skip:0,bond:50,hp:70,id:i,fr:[],w:{10000:4,5000:1,1000:5},wp:null,sick:null,deb:{tar:0,alc:0},married:null,engTo:null,earn:0,cards:[],ins:0,dbl:0,pin:0,hard:0,lobby:0,novote:0,bust:0,taxAcc:0});
+  N=parseInt(modeV);SC=Math.max(.25,Math.min(1,220/N));SEED=hashS(sd);CFG=genBoard(SEED,N);
+  MAND=CFG.mand.map(m=>m.i).sort((a,b)=>a-b);SQS={};MAPS={};makeP();
+  $('map').setAttribute('height',HH);$('map').setAttribute('viewBox',`0 0 1700 ${HH}`);
+  {const r=mulberry32(SEED^0x5a17),sp=Math.max(25,Math.round(N/12));SHOPS=[];for(let k=Math.round(sp*.6);k<N-4;k+=sp+Math.floor(r()*7)-3)SHOPS.push(k);SHOPSET=new Set(SHOPS)}
+  $('shopm').classList.remove('on');
+  cur=0;fin=0;TRAPS=[];busy=false;mapJob='';S=PL[0];ROUND=1;TREND='normal';PRES=null;REGIME=null;PD={};$('elec').classList.remove('on');updateSoc();
+  $('setup').classList.add('hide');$('game').classList.remove('hide');
+  $('log').innerHTML='';$('pcard').classList.remove('hide');$('hand').style.display='none';$('res').classList.add('hide');$('jobpick').classList.add('hide');
+  $('roll').classList.remove('hide');$('again').classList.add('hide');$('wn').textContent='GO';au();try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}
+  log(`ゲーム開始！ ${n}人で対戦（全${N}マス・強制イベント${MAND.length}か所）。盤面シード：「${sd}」。所持金は各50,000円。まずは全員共通のマスを進もう`,null,1);
+  REL={};PEND=[];syncFr();
+  PL.forEach(syncW);WSIG='';WSHOW=-1;$('wallet').classList.remove('hide');
+  setMap(null);render();
+  if(!kick)return;
+  if(NET.on){if(S.cpu){$('roll').disabled=true;setTimeout(play,600)}else{busy=false;render()}}
+  else if(S.cpu){$('roll').disabled=true;setTimeout(play,600)}else if(humans()>1){busy=true;$('roll').disabled=true;handoff().then(()=>{busy=false;$('roll').disabled=false})}else $('roll').disabled=false;
+}
+function fsHint(){const m=$('fsmsg');m.textContent='この表示方法では全画面にできませんでした。Safariで共有ボタン →「ホーム画面に追加」から起動すると、全画面で遊べます。';m.style.display='block';setTimeout(()=>{m.style.display='none'},9000)}
+$('fsb').onclick=()=>{
+  const d=document,el=d.documentElement;
+  if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d);return}
+  const f=el.requestFullscreen||el.webkitRequestFullscreen;
+  if(!f){fsHint();return}
+  try{const r=f.call(el);if(r&&r.catch)r.catch(fsHint)}catch(e){fsHint()}
+};
+
+// ===== ルーレットを直接はじく／スクロールして回す =====
+(function(){
+  const box=$('wbox');box.style.touchAction='none';box.style.cursor='grab';
+  const ready=()=>!busy&&S&&!S.cpu&&!S.choosing&&mine()&&!$('roll').disabled&&!$('ask').classList.contains('on');
+  const go=(pw,dir)=>{if(!ready())return;const f={pw:Math.max(.05,Math.min(1,pw)),dir};au();if(NET.on&&!NET.host){busy=true;$('roll').disabled=true;netSendHost({t:'act',a:'roll',fl:f});return}FLICK=f;play()};
+  const ang=e=>{const r=$('wsv').getBoundingClientRect();return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI};
+  let drag=null;
+  const rot=d=>{TH+=d;$('wh').setAttribute('transform',`rotate(${TH.toFixed(2)})`)};
+  box.addEventListener('pointerdown',e=>{if(e.target.closest('#mute')||!ready())return;drag={a:ang(e),t:performance.now(),hist:[[performance.now(),0]],tot:0};try{box.setPointerCapture(e.pointerId)}catch(x){}box.style.cursor='grabbing'});
+  box.addEventListener('pointermove',e=>{if(!drag)return;let d=ang(e)-drag.a;if(d>180)d-=360;if(d<-180)d+=360;drag.a=ang(e);
+    rot(d);drag.tot+=d;const n=performance.now();drag.hist.push([n,drag.tot]);while(drag.hist.length>2&&n-drag.hist[0][0]>120)drag.hist.shift()});
+  const end=()=>{if(!drag)return;const h=drag.hist,a=h[0],b=h[h.length-1];drag=null;box.style.cursor='grab';
+    const dt=Math.max(16,b[0]-a[0]),v=(b[1]-a[1])/dt*1000;   // 度/秒
+    if(performance.now()-b[0]<120&&Math.abs(v)>90)go(Math.abs(v)/1600,v>0?1:-1)};
+  box.addEventListener('pointerup',end);box.addEventListener('pointercancel',end);
+  // マウスホイール／トラックパッドのスクロール：強く・速くスクロールするほど速く回る
+  let wsum=0,wt=null,wdir=1;
+  box.addEventListener('wheel',e=>{if(!ready())return;e.preventDefault();
+    const d=e.deltaMode===1?e.deltaY*30:e.deltaY;wsum+=Math.abs(d);wdir=d>=0?1:-1;rot(d*.25);
+    clearTimeout(wt);wt=setTimeout(()=>{const pw=wsum/1400;wsum=0;go(pw,wdir)},140)},{passive:false});
+})();
+$('roll').onclick=()=>{au();if(busy||S.cpu||!mine())return;if(NET.on&&!NET.host){busy=true;$('roll').disabled=true;netSendHost({t:'act',a:'roll',fl:null});return}play()};
+$('again').onclick=()=>{if(NET.on){location.reload();return}$('game').classList.add('hide');$('setup').classList.add('hide');$('setup').classList.remove('hide')};
+
+
+// =====================================================================
+// ===== オンライン対戦（PeerJS）：ホストが全状態を管理し、参加者へ一斉配信 =====
+// ・ホスト＝ゲームエンジンを動かす唯一の端末。ダイス・カード・ショップ等の操作は参加者→ホストへ送られ、
+//   ホストが gameState を更新して全員へ配信（手札は本人にだけ中身を送る）。
+// ・参加者の端末は受け取った gameState から画面を再描画するだけ（選択肢・投票など「自分の番の操作画面」はホストから指示されて表示）。
+// =====================================================================
+NET.uid=0;NET.pend={};NET.logs=[];NET.sent={};NET.q=false;NET.res=null;NET.started=false;NET.shop=null;NET.gshop=null;NET.lobby=[];NET.seats=[];NET.hostConn=null;NET.prevCur=-1;
+function rem(p){return !!(NET.on&&NET.host&&p&&!p.cpu&&p.own&&p.own!=='host')}   // 参加者（他端末）が操作するプレイヤーか
+const netJ=m=>JSON.stringify(m);
+function netSendTo(c,m){try{if(c&&c.open)c.send(netJ(m))}catch(e){}}
+function netBcast(m,except){for(const id in NET.conns)if(id!==except)netSendTo(NET.conns[id],m)}
+function netSendHost(m){netSendTo(NET.hostConn,m)}
+const encA=v=>Array.isArray(v)?v.map(encA):(v&&typeof v==='object'&&PL.includes(v))?{__p:v.id}:v;
+const decA=v=>Array.isArray(v)?v.map(decA):(v&&typeof v==='object')?(v.__p!=null&&Object.keys(v).length===1?PL[v.__p]:v):v;
+// ---- 状態スナップショット（宛先ごとに他人の手札を伏せる）----
+function snapFor(pi){
+  return {PL:PL.map(p=>p.id===pi?p:{...p,sabo:hasC(p,'sabo')?1:0,cards:p.cards.map(c=>({id:'?',cat:(CD[c.id]||{}).cat}))}),
+    cur,ROUND,TREND,PRES,REGIME,PD,REL,fin,busy,TRAPS,wait:NET.wait,res:NET.res}}
+function doSync(){
+  if(!(NET.on&&NET.host&&NET.started))return;
+  for(const id in NET.conns){const pi=PL.findIndex(p=>p.own===id),from=NET.sent[id]||0,logs=NET.logs.slice(from);NET.sent[id]=NET.logs.length;
+    netSendTo(NET.conns[id],{t:'gs',gs:snapFor(pi),logs})}}
+function netSync(){if(NET.q||!(NET.on&&NET.host&&NET.started))return;NET.q=true;Promise.resolve().then(()=>{NET.q=false;doSync()})}
+// ---- ホスト → 参加者：操作画面の呼び出し（結果を待つ）----
+function RUI(p,fn,args,dflt){
+  return new Promise(res=>{const c=NET.conns[p.own];if(!c||!c.open){res(dflt);return}
+    const id=++NET.uid;NET.pend[id]={res,pid:p.id,dflt};NET.wait=p.id;doSync();
+    netSendTo(c,{t:'ui',id,fn,args:encA(args)})})}
+function spec(p,msg){if(!NET.on||!NET.host)return;netBcast({t:'fx',k:'toast',m:msg},p.own);if(p.own!=='host')_toast(msg)}
+const _ask=ask,_showEvent=showEvent,_humanVote=humanVote,_showElecResult=showElecResult,_spr=showPlayerRoulette,_spinOnce=spinOnce,_toast=toast;
+ask=function(t,x,o,who){const p=who||S;return rem(p)?RUI(p,'ask',[t,x,o],0):_ask(t,x,o)};
+showEvent=function(q,i,L,dm,dr,dh){const p=S;
+  if(NET.on&&NET.host){spec(p,`${p.name}：${i}マス目「${q.n||''}」 ${STORY||''}`.slice(0,120))}
+  return rem(p)?RUI(p,'showEvent',[q,i,L,dm,dr,dh,{STORY,NOTE,HOSP}]):_showEvent(q,i,L,dm,dr,dh)};
+humanVote=function(p,A,B,i,tot){return rem(p)?RUI(p,'humanVote',[p,A,B,i,tot],0):_humanVote(p,A,B,i,tot)};
+showPlayerRoulette=function(p,others,win){return rem(p)?RUI(p,'spr',[p,others,win]):_spr(p,others,win)};
+showElecResult=function(A,B,v,win,tie,W){if(NET.on&&NET.host)netBcast({t:'fx',k:'elec',a:[A,B,v,win===A?0:1,tie,W]});return _showElecResult(A,B,v,win,tie,W)};
+spinOnce=function(n,dur0,rot0,fl){if(NET.on&&NET.host)netBcast({t:'fx',k:'spin',a:[n,dur0,rot0,fl||null,WMAX]});return _spinOnce(n,dur0,rot0,fl)};
+toast=function(t){if(NET.on&&NET.host)netBcast({t:'fx',k:'toast',m:t});_toast(t)};
+const UIL={
+  ask:(a)=>_ask(a[0],a[1],a[2]),
+  showEvent:(a)=>{const e=a[6]||{};STORY=e.STORY||'';NOTE=e.NOTE||'';HOSP=e.HOSP||'';return _showEvent(a[0],a[1],a[2],a[3],a[4],a[5])},
+  humanVote:(a)=>_humanVote(a[0],a[1],a[2],a[3],a[4]),
+  spr:(a)=>_spr(a[0],a[1],a[2])};
+// ---- ホスト：参加者からのアクション ----
+function handleAct(c,m){
+  const pi=PL.findIndex(p=>p.own===c.peer),p=PL[pi];if(!p)return;
+  if(m.a==='roll'){if(pi===cur&&!busy&&!p.cpu&&!p.choosing&&!p.done){const f=m.fl&&isFinite(m.fl.pw)?{pw:Math.max(.05,Math.min(1,+m.fl.pw)),dir:m.fl.dir<0?-1:1}:null;FLICK=f;play()}}
+  else if(m.a==='use'){if(pi===cur)humanUse(+m.i|0)}
+  else if(m.a==='pick'){if(pi===cur&&S.choosing&&J[m.j]){$('jobpick').classList.add('hide');pick(m.j);after()}}
+  else if(m.a==='buy'){const sh=NET.shop;if(sh&&sh.p===p){const r=shopBuy(p,sh.st,sh.rate,+m.i|0);if(r!==null)render();doSync();netSendTo(c,{t:'shopu',st:sh.st,note:r||''})}}
+  else if(m.a==='shopdone'){const sh=NET.shop;if(sh&&sh.p===p){NET.shop=null;NET.wait=-1;sh.res();netSync()}}
+  else if(m.a==='wal'){const w=m.w;if(w&&DEN.every(d=>Number.isInteger(w[d])&&w[d]>=0)&&(!w.n||w.n===p.w.n)&&wSum(w)===wSum(p.w)){DEN.forEach(d=>p.w[d]=w[d]);netSync()}}
+}
+function onHostData(c,raw){
+  let m;try{m=JSON.parse(raw)}catch(e){return}
+  if(m.t==='join'){
+    if(NET.started||NET.lobby.length>=6){netSendTo(c,{t:'full',started:NET.started});return}
+    if(!NET.lobby.find(s=>s.own===c.peer))NET.lobby.push({name:String(m.name||'ゲスト').slice(0,10),own:c.peer,cpu:false});
+    NET.conns[c.peer]=c;lobbyUpdate()}
+  else if(m.t==='uir'){const e=NET.pend[m.id];if(e&&PL[e.pid]&&PL[e.pid].own===c.peer){delete NET.pend[m.id];NET.wait=-1;e.res(m.v===undefined?e.dflt:m.v)}}
+  else if(m.t==='act'){try{handleAct(c,m)}catch(e){console.error(e)}}
+}
+function onGuestLeft(id){
+  delete NET.conns[id];
+  if(!NET.started){NET.lobby=NET.lobby.filter(s=>s.own!==id);lobbyUpdate();return}
+  const pi=PL.findIndex(p=>p.own===id);if(pi<0)return;const p=PL[pi];
+  p.cpu=true;p.own=null;log(`📴 ${p.name}さんが切断。CPUが代わりに進めます`,'crimson',1);
+  for(const k in NET.pend){const e=NET.pend[k];if(e.pid===pi){delete NET.pend[k];e.res(e.dflt)}}
+  if(NET.shop&&NET.shop.p===p){const sh=NET.shop;NET.shop=null;sh.res()}
+  NET.wait=-1;render();
+  if(pi===cur&&!busy&&!PL.every(q=>q.done)){busy=true;setTimeout(()=>{if(S.choosing){pick(JL()[Math.floor(Math.random()*JL().length)]);after()}else play()},400)}
+}
+// ---- 参加者：ホストからのメッセージ ----
+async function onGuestData(raw){
+  let m;try{m=JSON.parse(raw)}catch(e){return}
+  if(m.t==='lobby'){NET.seats=m.seats;NET.code=m.code;lobbyDraw()}
+  else if(m.t==='full'){nmsg(m.started?'この部屋はすでにゲームが始まっています':'この部屋は満員です（最大6人）')}
+  else if(m.t==='start'){NET.me=m.you;NET.started=true;$('netm').classList.remove('on');newGame(m.specs,m.mode,m.sd,false);$('log').innerHTML='';render()}
+  else if(m.t==='gs'){applyGS(m)}
+  else if(m.t==='ui'){
+    const f=UIL[m.fn];let v;try{v=await f(decA(m.args))}catch(e){console.error(e)}
+    netSendHost({t:'uir',id:m.id,v:v===undefined?null:v})}
+  else if(m.t==='fx'){
+    if(m.k==='toast')_toast(m.m);
+    else if(m.k==='spin'){const a=m.a;if(a[4]&&a[4]!==WMAX)buildWheel(a[4]);_spinOnce(a[0],a[1],a[2],a[3])}
+    else if(m.k==='elec'){const a=m.a;_showElecResult(a[0],a[1],a[2],[a[0],a[1]][a[3]],a[4],a[5])}}
+  else if(m.t==='shop'){NET.gshop={pid:m.pid,st:m.st,rate:m.rate};guestShop('')}
+  else if(m.t==='shopu'){if(NET.gshop){NET.gshop.st=m.st;guestShop(m.note)}}
+}
+function guestShop(note){const g=NET.gshop;if(!g)return;const p=PL[g.pid];
+  shopDraw(p,g.st,g.rate,note);
+  $('shopc').onclick=e=>{const b=e.target.closest('button[data-i]');if(!b||b.disabled)return;netSendHost({t:'act',a:'buy',i:+b.dataset.i})};
+  $('shopok').onclick=()=>{shopClose();NET.gshop=null;netSendHost({t:'act',a:'shopdone'})}}
+function applyGS(m){
+  const g=m.gs,old=PL,oldMe=old[NET.me];
+  const keep=oldMe&&(CARRY||wSum(BUN))?oldMe.w:null,oldW=oldMe?wSum(oldMe.w):0;
+  PL=g.PL;PL.forEach((p,i)=>{if(old[i]&&old[i].wp)p.wp=old[i].wp});if(keep)PL[NET.me].w=keep;
+  cur=g.cur;ROUND=g.ROUND;TREND=g.TREND;PRES=g.PRES;REGIME=g.REGIME||null;PD=g.PD||{};REL=g.REL||{};TRAPS=g.TRAPS||[];fin=g.fin;busy=!!g.busy;S=PL[cur];NET.wait=g.wait;NET.res=g.res;
+  (m.logs||[]).forEach(([t,c])=>{const d=document.createElement('div');d.textContent=t;if(c)d.style.color=c;$('log').prepend(d)});
+  setMap(S.job);
+  if(NET.prevCur!==cur&&cur===NET.me&&NET.prevCur!==-1){beep(880,.12,'triangle',.08);setTimeout(()=>beep(1175,.14,'triangle',.08),130)}
+  NET.prevCur=cur;
+  render();
+  const me=PL[NET.me];if(me&&!keep){const nw=wSum(me.w);if(nw!==oldW&&oldMe)drawWallet(true,nw-oldW)}
+  if(g.res){$('res').innerHTML=g.res;endUI()}
+}
+// ---- render後の端末ごとの調整（呼び出し元：render末尾）----
+function netRender(){
+  const p=PL[cur],m=mine();
+  $('roll').disabled=!!(busy||!m||p.cpu||p.done);
+  $('roll').textContent=m?`🎲 あなたの番${p.jail?'（🔒 拘留所）':''}：👆 ルーレットをはじく`:`⏳ ${p.name}さんの番です${p.cpu?'（CPU）':''}`;
+  $('jobpick').classList.toggle('hide',!(p.choosing&&m));
+  const w=NET.wait>=0&&NET.wait!==NET.me&&PL[NET.wait]?`　⏳ ${PL[NET.wait].name}さんが操作中…`:'';
+  const me=PL[NET.me];$('netbar').textContent=`🌐 部屋 ${NET.code}｜あなた：${me?me.name:''}${w}`;$('netbar').style.display='block';
+  if(NET.host)netSync()}
+// ---- ロビー／接続UI ----
+const nmsg=t=>{$('nmsg').textContent=t||''};
+function lobbyUpdate(){
+  netBcast({t:'lobby',code:NET.code,seats:NET.lobby.map(s=>({name:s.name,cpu:s.cpu,own:s.own}))});NET.seats=NET.lobby;lobbyDraw()}
+function lobbyDraw(){
+  $('net1').style.display='none';$('net2').style.display='block';
+  $('ncodev').textContent=NET.code;
+  const seats=NET.host?NET.lobby:NET.seats,myId=NET.host?'host':(NET.peer&&NET.peer.id);
+  $('nseats').innerHTML=seats.map((s,i)=>`<div class="ns"><span class="nc" style="background:${COLS[i]}">${i+1}</span><b>${esc(s.name)}</b>${s.own==='host'?' <small>👑ホスト</small>':''}${s.own===myId&&!(NET.host)?' <small>（あなた）</small>':''}${s.cpu?' 🤖':''}${NET.host&&s.cpu?`<button class="nx" data-x="${i}">✕</button>`:''}</div>`).join('');
+  $('nhostctl').style.display=NET.host?'block':'none';$('nguestw').style.display=NET.host?'none':'block';
+  $('nstart').disabled=!(NET.host&&seats.length>=2);$('naddcpu').disabled=!(NET.host&&seats.length<6);
+  $('nlobbyinfo').textContent=`参加者 ${seats.length} / 6 人`}
+function netStart(){
+  if(NET.lobby.length<2){nmsg('2人以上必要です（CPUを追加できます）');return}
+  const specs=NET.lobby.map(s=>({name:s.name,cpu:s.cpu,own:s.own})),mode=$('nmode').value,sd=$('nseed').value.trim()||String(Math.floor(Math.random()*1e9));
+  NET.started=true;NET.me=0;NET.logs=[];NET.sent={};
+  for(const id in NET.conns)netSendTo(NET.conns[id],{t:'start',specs,mode,sd,you:specs.findIndex(s=>s.own===id)});
+  $('netm').classList.remove('on');newGame(specs,mode,sd,true)}
+function netHost(){
+  const name=$('nname').value.trim()||'ホスト';
+  if(!window.Peer){nmsg('通信ライブラリ（PeerJS）を読み込めませんでした。ネットワーク接続を確認してください。');return}
+  NET.on=true;NET.host=true;nmsg('部屋を作っています…');
+  const open=k=>{
+    const code=String(10000+Math.floor(Math.random()*90000));let peer;
+    try{peer=new Peer('anyones-'+code)}catch(e){nmsg('接続に失敗しました');NET.on=false;return}
+    peer.on('open',()=>{NET.peer=peer;NET.code=code;NET.lobby=[{name,own:'host',cpu:false}];NET.me=0;nmsg('');lobbyUpdate()});
+    peer.on('connection',c=>{c.on('data',d=>onHostData(c,d));c.on('close',()=>onGuestLeft(c.peer));c.on('error',()=>onGuestLeft(c.peer))});
+    peer.on('error',e=>{if(e.type==='unavailable-id'&&k<6){open(k+1)}else{nmsg('接続エラー：'+(e.type||e))}});
+  };open(0)}
+function netJoin(){
+  const name=$('nname').value.trim()||'ゲスト',code=$('ncode').value.replace(/\D/g,'');
+  if(!window.Peer){nmsg('通信ライブラリ（PeerJS）を読み込めませんでした。ネットワーク接続を確認してください。');return}
+  if(code.length<4){nmsg('ルームIDを入力してください（4〜6桁の数字）');return}
+  NET.on=true;NET.host=false;nmsg('接続しています…');let ok=false;
+  let peer;try{peer=new Peer()}catch(e){nmsg('接続に失敗しました');NET.on=false;return}
+  const fail=t=>{if(ok)return;nmsg(t);NET.on=false;try{peer.destroy()}catch(e){}};
+  const to=setTimeout(()=>fail('部屋が見つかりません（IDを確認してください）'),12000);
+  peer.on('error',e=>{clearTimeout(to);fail(e.type==='peer-unavailable'?'その部屋は見つかりません（IDを確認してください）':'接続エラー：'+(e.type||e))});
+  peer.on('open',()=>{NET.peer=peer;const c=peer.connect('anyones-'+code,{reliable:true});NET.hostConn=c;
+    c.on('open',()=>{ok=true;clearTimeout(to);NET.code=code;nmsg('');netSendHost({t:'join',name})});
+    c.on('data',d=>onGuestData(d));
+    c.on('close',()=>{$('netm').classList.add('on');$('net1').style.display='none';$('net2').style.display='none';$('net3').style.display='block'});
+    c.on('error',()=>{})})}
+$('nmode').innerHTML=$('mode').innerHTML;$('nmode').value='500';
+$('nhost').onclick=netHost;$('njoin').onclick=()=>{$('njf').style.display='block';$('ncode').focus()};$('njgo').onclick=netJoin;
+$('nclose').onclick=()=>{if(NET.on&&!NET.started){try{NET.peer&&NET.peer.destroy()}catch(e){}NET.on=false;NET.host=false;NET.conns={}}$('netm').classList.remove('on');$('net1').style.display='block';$('net2').style.display='none'};
+$('naddcpu').onclick=()=>{if(NET.lobby.length>=6)return;const k=NET.lobby.filter(s=>s.cpu).length+1;NET.lobby.push({name:'CPU'+k,own:null,cpu:true});lobbyUpdate()};
+$('nseats').onclick=e=>{const b=e.target.closest('button[data-x]');if(!b||!NET.host)return;NET.lobby.splice(+b.dataset.x,1);lobbyUpdate()};
+$('nstart').onclick=netStart;
+$('nreload').onclick=()=>location.reload();
+$('modeLocal').onclick=()=>{};
+$('modeNet').onclick=()=>{$('netm').classList.add('on');if(!NET.on){$('net1').style.display='block';$('net2').style.display='none';$('net3').style.display='none'}};
+$('ncopy').onclick=()=>{try{navigator.clipboard.writeText(NET.code);nmsg('ルームIDをコピーしました')}catch(e){}};
+
+try{allSlots().forEach(o=>probe(o.path))}catch(e){}
+try{document.querySelector('#hd h1').innerHTML=vis('ui','logo','🎲','','1.2em')+' Anyones'}catch(e){}
+</script>
+<div id="ask"><div id="askb"><div id="askimg"></div><div id="askt"></div><div id="askx"></div><div id="aska"></div></div></div>
+<div id="vroul"><div id="vrb"><div id="vrt"></div><div id="vrs"></div><div id="vrw"><div id="vrst"></div><div id="vrm"></div></div><button id="vrgo">▶ スタート！</button><div id="vrr"></div></div></div>
+<div id="shopm"><div id="shopb"><div id="shopt"></div><div id="shopx"></div><div id="shopc"></div><button id="shopok">何も買わずに通り抜ける</button></div></div>
+<div id="elec"><div id="elecb"><div id="elect"></div><div id="elecx"></div><div id="eleccs"></div><div id="elecf"></div></div></div><div id="toast"></div>
+<div id="hand"><div class="note">端末を次のプレイヤーに渡してください</div><div id="hav"></div><h2 id="hn"></h2><div class="note">ほかの人は画面を見ないでね</div><button id="hb">自分の番を始める</button></div>
+<div id="ev"><div class="evc"><div id="evimg"></div><div id="evw"></div><div id="evt"></div><div id="evs"></div><div id="evd"></div><div id="evst"></div><div id="evb"></div><div class="note">タップで閉じる</div></div></div>
+</body>
+</html>
